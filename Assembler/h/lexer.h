@@ -17,7 +17,7 @@ typedef std::string TokenType;
 class Token
 {
 friend class Lexer;
-public:
+private:
 	TokenType type;
 	std::string token_string;
 public:
