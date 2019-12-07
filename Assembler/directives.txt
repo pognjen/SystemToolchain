@@ -1,0 +1,12 @@
+.extern
+.section
+.equ
+.text
+.data
+.bss
+.end
+.byte
+.word
+.align
+.skip
+.global
