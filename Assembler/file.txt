@@ -1,0 +1,6 @@
+.text
+
+_start:
+	push bp
+	mov bp
+.end

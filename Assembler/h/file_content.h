@@ -9,15 +9,15 @@ class FileContent
 public:
 	FileContent(std::string file_name)
 	{
+		const char* name = file_name.c_str();
 		this->file = new std::ifstream();
-		this->file->open(file_name);
+		this->file->open(name);
 		
 		file_content = "";
 		file_size = 0;
 	}
 	
-	// Dumps .txt file content in string and returns string
-	string get_file_content();
+	std::string get_file_content();
 private:
 	std::ifstream* file;
 	std::string file_content;
