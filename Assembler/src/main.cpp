@@ -22,5 +22,10 @@ int main(int argc,char* argv[])
 	Lexer lexer(file_content);
 	std::list<Token> list = lexer.get_token_list();
 	
+	std::list<Token>::iterator it ;
+	for (it = list.begin(); it != list.end() ; it++)
+	{
+		std::cout<<it->token_string<<" : "<<it->type<<'\n';
+	}
 	
 }

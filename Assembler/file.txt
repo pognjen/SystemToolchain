@@ -5,7 +5,7 @@ main:
 	mov r0,r1
 	add r0[5],r1[symbol]
 	add $symbol
-	mul *5
+	mulw *5
 	halt 44
 	sub 33,44
 	not *12312

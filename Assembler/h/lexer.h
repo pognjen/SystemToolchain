@@ -11,29 +11,7 @@
 #include <fstream>
 
 #endif
-/*typedef enum TokenType
-{
-	UNKNOWN,
-	AMPERSAND,
-	DOLLAR,
-	ASTERISK,
-	LEFT_BRACKET,
-	RIGHT_BRACKET,
-	ENDOFFILE,
-	EOLN,
-	REGISTER,
-	SYMBOL,
-	COMMENT,
-	DIRECTIVE,
-	PLUS,
-	MINUS,
-	COLON,
-	COMMA,
-	INSTRUCTION,
-	LITERAL,
-	IMMEDIATE
-}TokenType;
-*/
+
 typedef std::string TokenType;
 
 class Token
@@ -94,8 +72,9 @@ public:
 			
 			map[s] = "INSTRUCTION"; //instruction
 			
-			s+='w';
-			map[s] = "INSTRUCTION";
+			std::string t = s;
+			t+='w';
+			map[t] = "INSTRUCTION";
 			s+='b';
 			map[s] = "INSTRUCTION";
 		}
