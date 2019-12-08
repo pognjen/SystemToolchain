@@ -52,8 +52,9 @@ private:
 	Token get_next_token();
 	Token get_next_multichar_token();
 	TokenType deduce_token_type(std::string& token_string);
-	
 public:
+	
+	static int get_lines_number(std::list<Token>& list);
 	std::unordered_map<std::string,std::string>& get_map()
 	{
 		return map;

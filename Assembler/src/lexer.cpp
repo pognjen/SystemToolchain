@@ -137,7 +137,7 @@ Token Lexer::get_next_token()
 	return token;
 }
 
-int get_lines_number(std::list<Token>& list)
+int Lexer::get_lines_number(std::list<Token>& list)
 {
 	int lines = 1;
 	std::list<Token>::iterator it;

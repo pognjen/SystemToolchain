@@ -16,6 +16,10 @@ public:
 		std::cout<<"Error: unknown token on line "<<line_number<<'\n';
 		exit(-1);
 	}
+	static void colon_expected(int line_number,std::string symbol)
+	{
+		std::cout<<"Error: colon exprected after "<<symbol<<" on line "<<line number<<'\n';
+	}
 };
 
 #endif
