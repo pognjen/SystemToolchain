@@ -1,5 +1,5 @@
 #include "lexer.h"
-
+#include "error.h"
 TokenType Lexer::deduce_token_type(std::string& token_string)
 {
 	int current_index = 0;
@@ -45,13 +45,13 @@ Token Lexer::get_next_multichar_token()
 	token.type = "UNKNOWN";
 
 	if (!isalnum(file_content[token_pointer]) && file_content[token_pointer] != '_' && file_content[token_pointer] != '.')
-    {
+    	{
         	return token;
-    }
+    	}
 
 	int i = 0;
 	
-	while (isalnum(file_content[token_pointer]) || file_content[token_pointer] == '_' || file_content[token_pointer] == '.')
+	while (token_pointer < file_content.size() && isalnum(file_content[token_pointer]) || file_content[token_pointer] == '_' || file_content[token_pointer] == '.')
 	{
 		token.token_string+=file_content[token_pointer];
 		token_pointer ++;
@@ -66,14 +66,22 @@ Token Lexer::get_next_multichar_token()
 Token Lexer::get_next_token()
 {
 	// Move token_ptr until first occurence of character
-	
+	Token token;
+
+	if (token_pointer >= file_content.size())
+	{
+		token.type = "EOF";
+		token.token_string = "EOF";
+		return token;
+	}
+
 	while (file_content[token_pointer] == ' ' || file_content[token_pointer] == '\t')
 	{
 		token_pointer++;
 	}
-	Token token;
-
+	
 	token.type="UNKNOWN";
+
 	token.token_string = file_content[token_pointer];
 
 	switch(file_content[token_pointer])
@@ -124,6 +132,16 @@ Token Lexer::get_next_token()
 	return token;
 }
 
+int get_lines_number(std::list<Token>& list)
+{
+	int lines = 1;
+	std::list<Token>::iterator it;
+	for (it=list.begin();it != list.end(); it++)
+	{
+		if (it->type == "EOLN") lines++;
+	}
+	return lines;
+}
 std::list<Token> Lexer::get_token_list()
 {
 	std::list<Token> list;
@@ -131,7 +149,7 @@ std::list<Token> Lexer::get_token_list()
 	while (1)
 	{
 		Token token = get_next_token();
-		
+					
 		if (token.type != "UNKNOWN")
 		{
 			list.push_back(token);
@@ -141,6 +159,13 @@ std::list<Token> Lexer::get_token_list()
 				break;
 			}
 		}
+		else
+		{
+			int line_number = get_lines_number(list);
+			
+			Error::unknown_token_type(line_number);
+		}
+			
 	}
 	
 	return list;

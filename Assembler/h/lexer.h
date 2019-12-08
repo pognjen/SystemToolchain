@@ -9,15 +9,16 @@
 #define _FSTREAM_H
 
 #include <fstream>
-
 #endif
+
+#include <iostream>
 
 typedef std::string TokenType;
 
 class Token
 {
 friend class Lexer;
-private:
+public:
 	TokenType type;
 	std::string token_string;
 public:
@@ -68,23 +69,21 @@ public:
 		while (!instructions.eof())
 		{
 			std::string s;
-			getline(instructions,s);
-			
-			map[s] = "INSTRUCTION"; //instruction
-			
-			std::string t = s;
-			t+='w';
-			map[t] = "INSTRUCTION";
-			s+='b';
-			map[s] = "INSTRUCTION";
+			std::getline(instructions,s);
+			map.insert({s,"INSTRUCTION"});
 		}
 		
 		while (!directives.eof())
 		{
 			std::string s;
-			getline(directives,s);
-			map[s] = "DIRECTIVE"; //directive
+			std::getline(directives,s);
+			map.insert({s,"DIRECTIVE"});//directive
 		}
+
+		/*for (auto& it: map) 
+		{
+		    std::cout << it.first<<'\n';
+		}*/
 	}
 	std::list<Token> get_token_list();
 };

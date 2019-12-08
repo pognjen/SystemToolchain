@@ -1,3 +1,4 @@
+.global
 .extern
 .section
 .equ
@@ -9,4 +10,4 @@
 .word
 .align
 .skip
-.global
+

@@ -11,6 +11,11 @@ public:
 		std::cout<<"Error: "<<file_name<<" could not be opened\n";
 		exit(-1);
 	}
+	static void unknown_token_type(int line_number)
+	{
+		std::cout<<"Error: unknown token on line "<<line_number<<'\n';
+		exit(-1);
+	}
 };
 
 #endif
