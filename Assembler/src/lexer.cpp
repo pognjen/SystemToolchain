@@ -6,6 +6,11 @@ TokenType Lexer::deduce_token_type(std::string& token_string)
 	
 	int flag = 1;
 	
+	if (token_string.size() >= 2 && token_string[0] == '0' && token_string[1] == 'x')
+	{
+		current_index+=2;
+	}
+
 	while (current_index != token_string.size())
 	{
 		if (!isdigit(token_string[current_index]))
