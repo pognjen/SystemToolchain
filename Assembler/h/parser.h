@@ -10,19 +10,6 @@
 
 #endif
 
-class Register
-{
-friend class Operand;
-friend class Instruction;
-friend class Directive;
-friend class Line;
-friend class Parser;
-private:
-    int number;
-	bool low;
-	bool high;
-};
-
 typedef enum op_type
 {
 	NO_TYPE,
@@ -36,6 +23,19 @@ typedef enum op_type
 	MEMDIR
 }OperandType;
 
+class Register
+{
+friend class Operand;
+friend class Instruction;
+friend class Directive;
+friend class Line;
+friend class Parser;
+private:
+    int number;
+	bool low = false;
+	bool high = false;
+};
+
 class Operand
 {
 friend class Line;
@@ -44,7 +44,7 @@ private:
 	OperandType type;
 	bool is_byte;
 	bool is_word;
-	Register register;
+	Register reg;
 	std::string symbol;
 	int literal;
 };
@@ -71,6 +71,8 @@ private:
 	void read_label();
 	void read_command();
 	void read_operand_list();
+	int read_dec_literal();
+	int read_eoln();
 public:
 	std::list<Line> parse_token_list(std::list<Token>& token_list);
 	Parser(std::list<Token>& token_list)
