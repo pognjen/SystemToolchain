@@ -71,14 +71,14 @@ private:
 	void read_label();
 	void read_command();
 	void read_operand_list();
-	int read_dec_literal();
+	int read_dec_literal(int sign);
 	int read_eoln();
 public:
-	std::list<Line> parse_token_list(std::list<Token>& token_list);
+	std::list<Line> parse_token_list();
 	Parser(std::list<Token>& token_list)
 	{
 		this->token_list = token_list;
 	}
-}
+};
 
 #endif

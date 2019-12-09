@@ -29,7 +29,7 @@ int main(int argc,char* argv[])
 	}*/
 	
 	//parse token list
-	Parser parser(token_list);
-	std::list<Line> line_list = parser.parse_token_list();
+	//Parser parser(token_list);
+	//std::list<Line> line_list = parser.parse_token_list();
 	
 }

@@ -12,7 +12,7 @@ int Parser::read_dec_literal(int sign)
 			Error::literal_expected();
 		}
 	}
-	int retVal = atoi(token_iterator->token_string);
+	int retVal = stoi(token_iterator->token_string);
 	
 	retVal = retVal*sign;
 	
@@ -106,11 +106,11 @@ void Parser::read_operand_list()
 							operand->is_word = true;
 							operand->is_byte = false;
 							operand->type = REGDIR;
-							operand->reg = token_iterator->token_string[1]-'0';
+							operand->reg.number = token_iterator->token_string[1]-'0';
 							
 							if (token_iterator->token_string.size() == 3)
 							{
-								if (token_iterator->token_string.size[2] == 'h' || token_iterator->token_string.size[2] == 'H')
+								if (token_iterator->token_string[2] == 'h' || token_iterator->token_string[2] == 'H')
 								{
 									operand->reg.high = true;
 								}
@@ -169,7 +169,7 @@ void Parser::read_operand_list()
 									else
 										Error::symbol_or_literal_expected();
 
-								if (type == RIGHT_BRACKET)
+								if (type == "RIGHT_BRACKET")
 								{
 									token_iterator++;
 									type = token_iterator->type;
@@ -204,7 +204,7 @@ void Parser::read_operand_list()
 							}
 						}
 					else
-						if (type == SYMBOL)
+						if (type == "SYMBOL")
 							{
 								operand->is_word = true;
 								operand->is_byte = false;
@@ -216,7 +216,7 @@ void Parser::read_operand_list()
 								type = token_iterator->type;
 							}
 					else
-						if (type == ASTERISK)
+						if (type == "ASTERISK")
 						{
 								token_iterator++;
 								type = token_iterator->type;
@@ -274,7 +274,7 @@ void Parser::read_command()
 		line_pointer->is_instruction = true;
 		line_pointer->is_directive = false;
 		
-		line->instruction = token_iterator->token_string;
+		line_pointer->instruction = token_iterator->token_string;
 		token_iterator++;
 	}
 	else
@@ -283,7 +283,7 @@ void Parser::read_command()
 			line_pointer->is_instruction = false;
 			line_pointer->is_directive = true;
 			
-			line->directive = token_iterator->token_string;
+			line_pointer->directive = token_iterator->token_string;
 			token_iterator++;
 		}
 }
