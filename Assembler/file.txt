@@ -5,6 +5,7 @@ _start:
 	push bp
 	mov r0,R5
 	mov &34
+	movw sp,			[0x255]
 	ret
 .end
 

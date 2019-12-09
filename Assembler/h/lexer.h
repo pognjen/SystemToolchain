@@ -17,76 +17,78 @@ typedef std::string TokenType;
 
 class Token
 {
-friend class Lexer;
+    friend class Lexer;
+
 public:
-	TokenType type;
-	std::string token_string;
+    TokenType type;
+    std::string token_string;
+
 public:
-	Token() = default;
-	Token(TokenType type,std::string token_string)
-	{
-		this->type = type;
-		this->token_string = token_string;
-	}
-	
-	TokenType get_token_type()
-	{
-		return type;
-	}
-	
-	std::string get_token_string()
-	{
-		return token_string;
-	}
+    Token() = default;
+    Token(TokenType type, std::string token_string)
+    {
+        this->type = type;
+        this->token_string = token_string;
+    }
+
+    TokenType get_token_type()
+    {
+        return type;
+    }
+
+    std::string get_token_string()
+    {
+        return token_string;
+    }
 };
 
 class Lexer
 {
 private:
-	std::string file_content;
-	std::unordered_map<std::string,std::string> map;
-	std::ifstream instructions;
-	std::ifstream directives;
-	
-	unsigned int token_pointer;
-	Token get_next_token();
-	Token get_next_multichar_token();
-	TokenType deduce_token_type(std::string& token_string);
-public:
-	
-	static int get_lines_number(std::list<Token>& list);
-	std::unordered_map<std::string,std::string>& get_map()
-	{
-		return map;
-	}
-	Lexer(std::string& file_content)
-	{
-		this->file_content = file_content;
-		token_pointer = 0;
-		
-		instructions.open("instructions.txt");
-		directives.open("directives.txt");
-		
-		while (!instructions.eof())
-		{
-			std::string s;
-			std::getline(instructions,s);
-			map.insert({s,"INSTRUCTION"});
-		}
-		
-		while (!directives.eof())
-		{
-			std::string s;
-			std::getline(directives,s);
-			map.insert({s,"DIRECTIVE"});//directive
-		}
+    std::string file_content;
+    std::unordered_map<std::string, std::string> map;
+    std::ifstream instructions;
+    std::ifstream directives;
 
-		/*for (auto& it: map) 
-		{
-		    std::cout << it.first<<'\n';
-		}*/
-	}
-	std::list<Token> get_token_list();
+    unsigned int token_pointer;
+    Token get_next_token();
+    Token get_next_multichar_token();
+    TokenType deduce_token_type(std::string& token_string);
+
+public:
+    static int get_lines_number(std::list<Token>& list);
+    std::unordered_map<std::string, std::string>& get_map()
+    {
+        return map;
+    }
+    Lexer(std::string& file_content)
+    {
+        this->file_content = file_content;
+        token_pointer = 0;
+
+        instructions.open("instructions.txt");
+        directives.open("directives.txt");
+
+        while (!instructions.eof())
+        {
+            std::string s;
+            std::getline(instructions, s);
+            map.insert({ s, "INSTRUCTION" });
+        }
+
+        while (!directives.eof())
+        {
+            std::string s;
+            std::getline(directives, s);
+            map.insert({ s, "DIRECTIVE" }); // directive
+        }
+
+        /*for (auto& it: map)
+        {
+            std::cout << it.first<<'\n';
+        }*/
+    }
+    std::list<Token> get_token_list();
 };
 
 #endif
