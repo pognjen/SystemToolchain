@@ -5,16 +5,28 @@
 
 int Parser::read_dec_literal(int sign)
 {
-    for (int i = 0; i < token_iterator->token_string.size(); i++)
+	std::string literal = token_iterator->token_string;
+	int i = 0;
+	bool is_hex = false;
+	if (literal.size() >= 3 && literal[0] == '0' && literal[1] == 'x')
+	{
+		i = i + 2;
+		is_hex = true;
+	}
+    for (; i < literal.size(); i++)
     {
-        if (token_iterator->token_string[i] < '0' || token_iterator->token_string[i] > '9')
+        if (literal[i] < '0' || literal[i] > '9')
         {
-            Error::literal_expected();
+           Error::literal_expected();
         }
     }
-    int retVal = stoi(token_iterator->token_string);
-
-    retVal = retVal * sign;
+    int retVal ;
+	
+	if (is_hex) retVal = stoi(literal,0,16);
+	else
+		retVal = stoi(literal,0,10);
+    
+	retVal = retVal * sign;
 
     if (retVal > INT16_MAX || retVal < INT16_MIN)
     {
@@ -59,7 +71,7 @@ void Parser::read_operand_list()
                     sign = -1;
                 }
 
-                if (type != "DEC_LITERAL")
+                if (type != "LITERAL")
                 {
                     token_iterator++;
                 }
@@ -281,6 +293,7 @@ void Parser::read_label()
 
         if (token_iterator->type == "COLON")
         {
+			token_iterator++;
             while (token_iterator->type == "EOLN")
             {
                 token_iterator++;

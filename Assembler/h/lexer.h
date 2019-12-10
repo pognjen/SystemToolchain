@@ -57,6 +57,7 @@ private:
 
 public:
     static int get_lines_number(std::list<Token>& list);
+	static int get_line_number(std::list<Token>& list,std::list<Token>::iterator it);
     std::unordered_map<std::string, std::string>& get_map()
     {
         return map;

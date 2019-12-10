@@ -162,6 +162,11 @@ int Lexer::get_lines_number(std::list<Token>& list)
     }
     return lines;
 }
+int Lexer::get_line_number(std::list<Token>& list,std::list<Token>::iterator it)
+{
+	int lines = 1;
+}
+
 std::list<Token> Lexer::get_token_list()
 {
     std::list<Token> list;
