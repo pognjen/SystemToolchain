@@ -17,7 +17,7 @@ int Parser::read_dec_literal(int sign)
     {
         if (literal[i] < '0' || literal[i] > '9')
         {
-           Error::literal_expected();
+           Error::literal_expected(Lexer::get_line_number(token_list,token_iterator));
         }
     }
     int retVal ;
@@ -30,7 +30,7 @@ int Parser::read_dec_literal(int sign)
 
     if (retVal > INT16_MAX || retVal < INT16_MIN)
     {
-        Error::wrong_literal_width();
+        Error::wrong_literal_width(Lexer::get_line_number(token_list,token_iterator));
     }
 
     token_iterator++;
@@ -51,7 +51,7 @@ int Parser::read_eoln()
     }
     else
     {
-        Error::invalid_statement();
+        Error::invalid_statement(Lexer::get_line_number(token_list,token_iterator));
     }
 }
 void Parser::read_operand_list()
@@ -107,7 +107,7 @@ void Parser::read_operand_list()
                     type = token_iterator->type;
                 }
                 else
-                    Error::symbol_expected_after_ampersand();
+                    Error::symbol_expected_after_ampersand(Lexer::get_line_number(token_list,token_iterator));
             }
             else if (type == "REGISTER")
             {
@@ -161,7 +161,7 @@ void Parser::read_operand_list()
                             type = token_iterator->type;
                         }
                         else
-                            Error::literal_expected();
+                            Error::literal_expected(Lexer::get_line_number(token_list,token_iterator));
                     }
                     else if (type == "SYMBOL")
                     {
@@ -172,7 +172,7 @@ void Parser::read_operand_list()
                         type = token_iterator->type;
                     }
                     else
-                        Error::symbol_or_literal_expected();
+                        Error::symbol_or_literal_expected(Lexer::get_line_number(token_list,token_iterator));
 
                     if (type == "RIGHT_BRACKET")
                     {
@@ -180,7 +180,7 @@ void Parser::read_operand_list()
                         type = token_iterator->type;
                     }
                     else
-                        Error::right_bracket_expected();
+                        Error::right_bracket_expected(Lexer::get_line_number(token_list,token_iterator));
                 }
                 line_pointer->operands.push_back(*operand);
             }
@@ -203,7 +203,7 @@ void Parser::read_operand_list()
                 }
                 else
                 {
-                    Error::symbol_expected_after_dollar();
+                    Error::symbol_expected_after_dollar(Lexer::get_line_number(token_list,token_iterator));
                 }
             }
             else if (type == "SYMBOL")
@@ -249,10 +249,10 @@ void Parser::read_operand_list()
                         type = token_iterator->type;
                     }
                     else
-                        Error::literal_expected();
+                        Error::literal_expected(Lexer::get_line_number(token_list,token_iterator));
                 }
                 else
-                    Error::literal_expected();
+                    Error::literal_expected(Lexer::get_line_number(token_list,token_iterator));
             }
 
             if (type == "COMMA")
@@ -300,7 +300,7 @@ void Parser::read_label()
             }
         }
         else
-            Error::colon_expected(token_iterator->token_string);
+            Error::colon_expected(token_iterator->token_string,Lexer::get_line_number(token_list,token_iterator));
     }
 }
 

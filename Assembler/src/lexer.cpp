@@ -165,6 +165,12 @@ int Lexer::get_lines_number(std::list<Token>& list)
 int Lexer::get_line_number(std::list<Token>& list,std::list<Token>::iterator it)
 {
 	int lines = 1;
+	std::list<Token>::iterator temp;
+	for (temp=list.begin();temp != it;temp++)
+	{
+		if (temp->type == "EOLN") lines++;
+	}
+	return lines;
 }
 
 std::list<Token> Lexer::get_token_list()
@@ -178,7 +184,12 @@ std::list<Token> Lexer::get_token_list()
         if (token.type != "UNKNOWN")
         {
             list.push_back(token);
-
+			
+			if (token.type == "SYMBOL" && isdigit(token.token_string[0]))
+			{
+				Error::symbol_start(token.token_string,Lexer::get_lines_number(list));
+			}
+			
             if (token.type == "EOF")
             {
                 break;
@@ -191,6 +202,5 @@ std::list<Token> Lexer::get_token_list()
             Error::unknown_token_type(line_number);
         }
     }
-
     return list;
 }

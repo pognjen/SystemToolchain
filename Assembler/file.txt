@@ -3,9 +3,9 @@
 _start:
 	mov R0,r1
 	pushb *25, R0l[symb]
-	movw &symb,$symbol
+	movw &symb,symbol
 	div r4h,-5
 .data
-.equ A, 0x50
+.equ A, 0x50qweqwe
 .byte 12312,123,12,3,123
 .end

@@ -35,16 +35,18 @@ private:
     int number;
     bool low = false;
     bool high = false;
+
 public:
-	friend std::ostream& operator<<(std::ostream& os,const Register& r) // for testing
-	{
-		os<<"R"<<r.number;
-		if (r.low) return os<<"L";
-		else
-			if (r.high) return os<<"H";
-		else
-			return os;
-	}
+    friend std::ostream& operator<<(std::ostream& os, const Register& r) // for testing
+    {
+        os << "R" << r.number;
+        if (r.low)
+            return os << "L";
+        else if (r.high)
+            return os << "H";
+        else
+            return os;
+    }
 };
 
 class Operand
@@ -59,21 +61,30 @@ private:
     Register reg;
     std::string symbol;
     int literal;
+
 public:
-	friend std::ostream& operator<<(std::ostream& os,const Operand& operand)
-	{
-		switch(operand.type)
-		{
-			case IMMED: return os<<operand.literal;
-			case IMMED_SYM_VALUE: return os<<operand.symbol;
-			case REGDIR: return os<<operand.reg;
-			case REGINDDISP_IMMED: return os<<operand.reg<<"["<<operand.literal<<"]";
-			case REGINDDISP_SYM_VALUE: return os<<operand.reg<<"["<<operand.symbol<<"]";
-			case PCREL: return os<<"$"<<operand.symbol;
-			case ABS: return os<<operand.symbol;
-			case MEMDIR: return os<<"*"<<operand.literal;
-		}
-	}
+    friend std::ostream& operator<<(std::ostream& os, const Operand& operand)
+    {
+        switch (operand.type)
+        {
+            case IMMED:
+                return os << operand.literal;
+            case IMMED_SYM_VALUE:
+                return os << operand.symbol;
+            case REGDIR:
+                return os << operand.reg;
+            case REGINDDISP_IMMED:
+                return os << operand.reg << "[" << operand.literal << "]";
+            case REGINDDISP_SYM_VALUE:
+                return os << operand.reg << "[" << operand.symbol << "]";
+            case PCREL:
+                return os << "$" << operand.symbol;
+            case ABS:
+                return os << operand.symbol;
+            case MEMDIR:
+                return os << "*" << operand.literal;
+        }
+    }
 };
 class Line
 {
@@ -86,20 +97,23 @@ private:
     std::string directive;
     std::string instruction;
     std::list<Operand> operands;
+
 public:
-	friend std::ostream& operator<<(std::ostream& os,const Line& line)
-	{
-		if (line.label != "") os<<line.label<<": ";
-		if (line.is_directive) os<<line.directive<<" ";
-		 else
-			 if (line.is_instruction) os<<line.instruction<<" ";
-		 
-		 for (auto &iter: line.operands)
-		 {
-			 os<<iter<<',';
-		 }
-		 return os;
-	}
+    friend std::ostream& operator<<(std::ostream& os, const Line& line)
+    {
+        if (line.label != "")
+            os << line.label << ": ";
+        if (line.is_directive)
+            os << line.directive << " ";
+        else if (line.is_instruction)
+            os << line.instruction << " ";
+
+        for (auto& iter : line.operands)
+        {
+            os << iter << ',';
+        }
+        return os;
+    }
 };
 
 class Parser

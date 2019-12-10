@@ -16,47 +16,52 @@ public:
         std::cout << "Error: unknown token on line " << line_number << '\n';
         exit(-1);
     }
-    static void colon_expected(std::string symbol)
+    static void colon_expected(std::string symbol,int line_number)
     {
-        std::cout << "Error: colon exprected after " << symbol << '\n';
+        std::cout << "Error: colon exprected after " << symbol <<" on line "<<line_number<<"\n";
         exit(-1);
     }
-    static void literal_expected()
+    static void literal_expected(int line_number)
     {
-        std::cout << "Error: literal expected\n";
+        std::cout << "Error: literal expected"<<" on line "<<line_number<<"\n";
         exit(-1);
     }
-    static void wrong_literal_width()
+    static void wrong_literal_width(int line_number)
     {
-        std::cout << "Error: wrong witdh of literal\n";
+        std::cout << "Error: wrong witdh of literal"<<" on line "<<line_number<<"\n";
         exit(-1);
     }
 
-    static void symbol_expected_after_ampersand()
+    static void symbol_expected_after_ampersand(int line_number)
     {
-        std::cout << "Error: symbol expected after &\n";
+        std::cout << "Error: symbol expected after &"<<" on line "<<line_number<<"\n";
         exit(-1);
     }
-    static void symbol_or_literal_expected()
+    static void symbol_or_literal_expected(int line_number)
     {
-        std::cout << "Error: symbol or literal expected\n";
+        std::cout << "Error: symbol or literal expected"<<" on line "<<line_number<<"\n";
         exit(-1);
     }
-    static void right_bracket_expected()
+    static void right_bracket_expected(int line_number)
     {
-        std::cout << "Error: [ expected\n";
+        std::cout << "Error: [ expected"<<" on line "<<line_number<<"\n";
         exit(-1);
     }
-    static void symbol_expected_after_dollar()
+    static void symbol_expected_after_dollar(int line_number)
     {
-        std::cout << "Error: symbol expected after $\n";
+        std::cout << "Error: symbol expected after $"<<" on line "<<line_number<<"\n";
         exit(-1);
     }
-    static void invalid_statement()
+    static void invalid_statement(int line_number)
     {
-        std::cout << "Error: invalid_statement\n";
+        std::cout << "Error: invalid_statement"<<" on line "<<line_number<<"\n";
         exit(-1);
     }
+	static void symbol_start(std::string symbol,int line_number)
+	{
+		std::cout << "Error: symbol "<<symbol<<" does not start with letter on line "<<line_number<<"\n";
+        exit(-1);
+	}
 };
 
 #endif
