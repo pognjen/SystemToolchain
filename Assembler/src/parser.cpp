@@ -332,9 +332,9 @@ std::list<Line> Parser::parse_token_list()
         int end = read_line();
 
 		line_pointer->src_line = Line::line_number;
-           line_list.push_back(*line_pointer);
-       
-        if (end) break;
+        line_list.push_back(*line_pointer);
+		
+        if (end || line_pointer->directive == ".end") break;
     }
     return line_list;
 }

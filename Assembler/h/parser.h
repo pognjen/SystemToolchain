@@ -1,7 +1,10 @@
 #ifndef _PARSER_H
 #define _PARSER_H
 
+#infdef _LIST_H
+#define _LIST_H
 #include <list>
+#endif
 
 #ifndef _STRING_H
 #define _STRING_H
@@ -13,14 +16,14 @@
 typedef enum op_type
 {
     NO_TYPE,
-    IMMED,
-    IMMED_SYM_VALUE,
-    REGDIR,
-    REGINDDISP_IMMED,
-    REGINDDISP_SYM_VALUE,
-    PCREL,
-    ABS,
-    MEMDIR
+    IMMED, //5
+    IMMED_SYM_VALUE, //&symbol
+    REGDIR, //r0
+    REGINDDISP_IMMED, //r0[5]
+    REGINDDISP_SYM_VALUE, //r0[symb]
+    PCREL, //$symbol
+    ABS, //symbol
+    MEMDIR //*5
 } OperandType;
 
 class Register
