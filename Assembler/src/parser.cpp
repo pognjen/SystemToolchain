@@ -3,6 +3,8 @@
 #include "parser.h"
 #include <cstdint>
 
+int Line::line_number = 0;
+
 int Parser::read_dec_literal(int sign)
 {
 	std::string literal = token_iterator->token_string;
@@ -42,11 +44,13 @@ int Parser::read_eoln()
     if (token_iterator->type == "EOLN")
     {
         token_iterator++;
+		Line::line_number++;
         return 0;
     }
     else if (token_iterator->type == "EOF")
     {
         token_iterator++;
+		Line::line_number++;
         return 1;
     }
     else
@@ -296,6 +300,7 @@ void Parser::read_label()
 			token_iterator++;
             while (token_iterator->type == "EOLN")
             {
+				Line::line_number++;
                 token_iterator++;
             }
         }
@@ -326,12 +331,10 @@ std::list<Line> Parser::parse_token_list()
     {
         int end = read_line();
 
-        if (end != 1)
-        {
-            line_list.push_back(*line_pointer);
-        }
-        else
-            break;
+		line_pointer->src_line = Line::line_number;
+           line_list.push_back(*line_pointer);
+       
+        if (end) break;
     }
     return line_list;
 }

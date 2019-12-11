@@ -94,10 +94,11 @@ private:
     std::string label = "";
     bool is_directive = false;
     bool is_instruction = false;
+	static int line_number;
+	int src_line;
     std::string directive;
     std::string instruction;
     std::list<Operand> operands;
-
 public:
     friend std::ostream& operator<<(std::ostream& os, const Line& line)
     {
@@ -112,6 +113,7 @@ public:
         {
             os << iter << ',';
         }
+		os<<": "<<line.src_line;
         return os;
     }
 };

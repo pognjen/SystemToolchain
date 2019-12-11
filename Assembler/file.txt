@@ -6,6 +6,8 @@ _start:
 	movw &symb,symbol
 	div r4h,-5
 .data
-.equ A, 0x50qweqwe
+
+
+.equ A, a
 .byte 12312,123,12,3,123
 .end
