@@ -3,20 +3,11 @@
 
 #include <string>
 
-#ifndef _LIST_H
-#define _LIST_H
-
 #include <list>
-
-#endif
 
 #include <unordered_map>
 
-#ifndef _FSTREAM_H
-#define _FSTREAM_H
-
 #include <fstream>
-#endif
 
 #include <iostream>
 

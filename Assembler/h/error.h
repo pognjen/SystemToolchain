@@ -62,6 +62,41 @@ public:
 		std::cout << "Error: symbol "<<symbol<<" does not start with letter on line "<<line_number<<"\n";
         exit(-1);
 	}
+	static void symbol_not_in_section(std::string symbol="",int line_number)
+	{
+		std::cout << "Error: symbol "<<symbol<<" is not defined in section on line "<<line_number<<"\n";
+		exit(-1);
+	}
+	static void multiple_definition(std::string symbol)
+	{
+		std::cout << "Error: multiple definitions of symbol  "<<symbol<<"\n";
+		exit(-1);
+	}
+	static void Error::global_requires_operands(int line_number)
+	{
+		std::cout << "Error: .global(or .extern) requires operands on line "<<line_number<<"\n";
+		exit(-1);
+	}
+	static void invalid_operand_type(int line_number)
+	{
+		std::cout << "Error: .global requires operands on line "<<line_number<<"\n";
+		exit(-1);
+	}
+	static void skip_requires_one_operand(int line_number)
+	{
+		std::cout << "Error: .skip requires one operands on line "<<line_number<<"\n";
+		exit(-1);
+	}
+	static void skip_requires_one_operand(int line_number)
+	{
+		std::cout << "Error: .skip requires one operands on line "<<line_number<<"\n";
+		exit(-1);
+	}
+	static void skip_requires_immediate_value(int line_number)
+	{
+		std::cout << "Error: .skip requires immediate value on line "<<line_number<<"\n";
+		exit(-1);
+	}
 };
 
 #endif

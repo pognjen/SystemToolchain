@@ -293,6 +293,7 @@ void Parser::read_label()
     if (token_iterator->type == "SYMBOL")
     {
         line_pointer->label = token_iterator->token_string;
+		line_pointer->label_src_line = Line::line_number;
         token_iterator++;
 
         if (token_iterator->type == "COLON")

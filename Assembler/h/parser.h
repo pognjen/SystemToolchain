@@ -1,17 +1,7 @@
 #ifndef _PARSER_H
 #define _PARSER_H
 
-#infdef _LIST_H
-#define _LIST_H
-#include <list>
-#endif
-
-#ifndef _STRING_H
-#define _STRING_H
-
-#include <string>
-
-#endif
+#include "lexer.h"
 
 typedef enum op_type
 {
@@ -40,7 +30,7 @@ private:
     bool high = false;
 
 public:
-    friend std::ostream& operator<<(std::ostream& os, const Register& r) // for testing
+    friend std::ostream& operator<<(std::ostream& os,const Register& r) // for testing
     {
         os << "R" << r.number;
         if (r.low)
@@ -48,7 +38,7 @@ public:
         else if (r.high)
             return os << "H";
         else
-            return os;
+           return os;
     }
 };
 
@@ -56,14 +46,14 @@ class Operand
 {
     friend class Line;
     friend class Parser;
-
+	friend class Assembler;
 private:
     OperandType type;
     bool is_byte;
     bool is_word;
     Register reg;
     std::string symbol;
-    int literal;
+    int literal = 0;
 
 public:
     friend std::ostream& operator<<(std::ostream& os, const Operand& operand)
@@ -92,12 +82,13 @@ public:
 class Line
 {
     friend class Parser;
-
+	friend class Assembler;
 private:
     std::string label = "";
     bool is_directive = false;
     bool is_instruction = false;
 	static int line_number;
+	int label_src_line;
 	int src_line;
     std::string directive;
     std::string instruction;
@@ -106,7 +97,13 @@ public:
     friend std::ostream& operator<<(std::ostream& os, const Line& line)
     {
         if (line.label != "")
-            os << line.label << ": ";
+		{
+			os << line.label << ": ";
+			int diff = line.src_line - line.label_src_line;
+			if (diff) os<<line.label_src_line<<'\n';
+			while (diff) os<<'\n',diff--;			
+		}
+   
         if (line.is_directive)
             os << line.directive << " ";
         else if (line.is_instruction)
