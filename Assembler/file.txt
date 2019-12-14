@@ -1,13 +1,23 @@
 .text
+.global _start
 
 _start:
-	mov R0,r1
-	pushb *25, R0l[symb]
-	movw &symb,symbol
-	div r4h,-5
-.data
-
-
-.equ A, a
-.byte 12312,123,12,3,123
+	mov r0,r1
+	xchg r5,r6
+	call main
+	call exit
+	
+main:
+	mov r0,r1
+	xchg r5,r6
+	ret
+.data	
+x:	.skip 10
+.align 6
+.section my_section, rwx
+m:.byte 1,2,3,4,5
+r: .word 5,6,7,8,9,10
+.equ my_symbol,250
+.bss
+.equ y,50
 .end

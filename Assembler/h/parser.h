@@ -83,10 +83,10 @@ class Line
 {
     friend class Parser;
 	friend class Assembler;
-private:
-    std::string label = "";
-    bool is_directive = false;
-    bool is_instruction = false;
+public:
+    std::string label;
+    bool is_directive;
+    bool is_instruction ;
 	static int line_number;
 	int label_src_line;
 	int src_line;
@@ -94,16 +94,16 @@ private:
     std::string instruction;
     std::list<Operand> operands;
 public:
+	Line()
+	{
+		label = "";
+		is_directive = false;
+		is_instruction = false;
+	}
     friend std::ostream& operator<<(std::ostream& os, const Line& line)
     {
-        if (line.label != "")
-		{
-			os << line.label << ": ";
-			int diff = line.src_line - line.label_src_line;
-			if (diff) os<<line.label_src_line<<'\n';
-			while (diff) os<<'\n',diff--;			
-		}
-   
+
+		if (line.label != "")os << line.label << ":";
         if (line.is_directive)
             os << line.directive << " ";
         else if (line.is_instruction)
@@ -113,7 +113,6 @@ public:
         {
             os << iter << ',';
         }
-		os<<": "<<line.src_line;
         return os;
     }
 };

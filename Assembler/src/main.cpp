@@ -1,8 +1,7 @@
 #include <iostream>
 #include "file_content.h"
 #include "error.h"
-#include "lexer.h"
-#include "parser.h"
+#include "assembler.h"
 
 int main(int argc, char* argv[])
 {
@@ -31,9 +30,11 @@ int main(int argc, char* argv[])
     // parse token list
      Parser parser(token_list);
      std::list<Line> line_list = parser.parse_token_list();
-	 
 	 for (auto& it: line_list)
 	 {
-		 std::cout<<it<<'\n';
+		 //std::cout<<it<<'\n';
 	 }
+	
+	 Assembler assembler(line_list);
+	 assembler.assemble_line_list();
 }

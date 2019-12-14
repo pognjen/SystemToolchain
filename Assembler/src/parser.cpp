@@ -308,6 +308,8 @@ void Parser::read_label()
         else
             Error::colon_expected(token_iterator->token_string,Lexer::get_line_number(token_list,token_iterator));
     }
+	else
+		line_pointer->label = "";
 }
 
 int Parser::read_line()
@@ -331,11 +333,13 @@ std::list<Line> Parser::parse_token_list()
     while (1)
     {
         int end = read_line();
-
+		
+        if (end || line_pointer->directive == ".end") 
+		{
+			break;
+		}
 		line_pointer->src_line = Line::line_number;
         line_list.push_back(*line_pointer);
-		
-        if (end || line_pointer->directive == ".end") break;
     }
     return line_list;
 }

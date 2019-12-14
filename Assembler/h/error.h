@@ -62,9 +62,9 @@ public:
 		std::cout << "Error: symbol "<<symbol<<" does not start with letter on line "<<line_number<<"\n";
         exit(-1);
 	}
-	static void symbol_not_in_section(std::string symbol="",int line_number)
+	static void symbol_not_in_section(std::string symbol,int line_number)
 	{
-		std::cout << "Error: symbol "<<symbol<<" is not defined in section on line "<<line_number<<"\n";
+		std::cout << "Error: symbol"<<" is not defined in section on line "<<line_number<<"\n";
 		exit(-1);
 	}
 	static void multiple_definition(std::string symbol)
@@ -72,7 +72,7 @@ public:
 		std::cout << "Error: multiple definitions of symbol  "<<symbol<<"\n";
 		exit(-1);
 	}
-	static void Error::global_requires_operands(int line_number)
+	static void global_requires_operands(int line_number)
 	{
 		std::cout << "Error: .global(or .extern) requires operands on line "<<line_number<<"\n";
 		exit(-1);
@@ -87,14 +87,49 @@ public:
 		std::cout << "Error: .skip requires one operands on line "<<line_number<<"\n";
 		exit(-1);
 	}
-	static void skip_requires_one_operand(int line_number)
-	{
-		std::cout << "Error: .skip requires one operands on line "<<line_number<<"\n";
-		exit(-1);
-	}
 	static void skip_requires_immediate_value(int line_number)
 	{
 		std::cout << "Error: .skip requires immediate value on line "<<line_number<<"\n";
+		exit(-1);
+	}
+	static void section_operands(int line_number)
+	{
+		std::cout << "Error: section directive must not have operands on line"<<line_number<<"\n";
+		exit(-1);
+	}
+	static void imported_symbol_defined(std::string symbol, int line_number)
+	{
+		std::cout << "Error: symbol "<<symbol<<" declared .extern and defined locally on line "<< line_number << "\n";
+		exit(-1);
+	}
+	static void global_not_in_section(int line_number)
+	{
+		std::cout << "Error: .global is not defined in section on line " << line_number << "\n";
+		exit(-1);
+	}
+	static void extern_not_in_section(int line_number)
+	{
+		std::cout << "Error: .extern is not defined in section on line " << line_number << "\n";
+		exit(-1);
+	}
+	static void directive_not_in_section(std::string directive, int line_number)
+	{
+		std::cout << "Error: directive "<<directive<<" is not defined in section on line "<< line_number << "\n";
+		exit(-1);
+	}
+	static void directive_requires_one_operand(std::string directive, int line_number)
+	{
+		std::cout << "Error: directive " << directive << " requires at least one operand on line " << line_number << "\n";
+		exit(-1);
+	}
+	static void section_requires_one_operand(int line_number)
+	{
+		std::cout << "Error: section requires name on line " << line_number << "\n";
+		exit(-1);
+	}
+	static void directive_requires_two_operands(std::string directive, int line_number)
+	{
+		std::cout << "Error: directive " <<directive<<" requires two operands on line " << line_number << "\n";
 		exit(-1);
 	}
 };
