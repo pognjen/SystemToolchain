@@ -87,6 +87,8 @@ public:
     std::string label;
     bool is_directive;
     bool is_instruction ;
+	bool operands_word;
+	bool operands_byte;
 	static int line_number;
 	int label_src_line;
 	int src_line;
@@ -99,6 +101,8 @@ public:
 		label = "";
 		is_directive = false;
 		is_instruction = false;
+		operands_word = false;
+		operands_byte = false;
 	}
     friend std::ostream& operator<<(std::ostream& os, const Line& line)
     {

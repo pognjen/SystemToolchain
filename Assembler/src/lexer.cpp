@@ -36,12 +36,23 @@ TokenType Lexer::deduce_token_type(std::string& token_string)
         }
     }
 
-    if (map.find(token_string) != map.end())
-    {
-        return map[token_string];
-    }
-    else
-        return "SYMBOL";
+	if (map.find(token_string) != map.end())
+	{
+		return map[token_string];
+	}
+	else 
+	{
+		std::string substring = token_string.substr(0, token_string.size() - 1);
+		if (map.find(substring) != map.end() && substring != "")
+		{
+			if (token_string[token_string.size() - 1] == 'b')
+				return "INSTRUCTIONB";
+			else
+				return "INSTRUCTIONW";
+		}
+	}
+	
+	return "SYMBOL";
 }
 
 Token Lexer::get_next_multichar_token()
@@ -72,7 +83,7 @@ Token Lexer::get_next_multichar_token()
 
 Token Lexer::get_next_token()
 {
-    // Move token_ptr until first occurence of character
+    // Move token_ptr token_ptr until first occurence of character
     Token token;
 
     if (token_pointer >= file_content.size())

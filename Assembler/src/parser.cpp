@@ -271,12 +271,17 @@ void Parser::read_operand_list()
 }
 void Parser::read_command()
 {
-    if (token_iterator != token_list.end() && token_iterator->type == "INSTRUCTION")
+    if (token_iterator != token_list.end() && (token_iterator->type == "INSTRUCTION" || token_iterator->type == "INSTRUCTIONB" || token_iterator->type == "INSTRUCTIONW"))
     {
         line_pointer->is_instruction = true;
         line_pointer->is_directive = false;
 
         line_pointer->instruction = token_iterator->token_string;
+		if (token_iterator->type == "INSTRUCTIONB") line_pointer->operands_byte = true,line_pointer->operands_word = false;
+		else
+			if (token_iterator->type == "INSTRUCTIONW") line_pointer->operands_word = true, line_pointer->operands_byte = false;
+			else
+				line_pointer->operands_word = true, line_pointer->operands_byte = false;
         token_iterator++;
     }
     else if (token_iterator != token_list.end() && token_iterator->type == "DIRECTIVE")
@@ -285,6 +290,7 @@ void Parser::read_command()
         line_pointer->is_directive = true;
 
         line_pointer->directive = token_iterator->token_string;
+		line_pointer->operands_word = true, line_pointer->operands_byte = false;
         token_iterator++;
     }
 }

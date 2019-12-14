@@ -280,6 +280,25 @@ void Assembler::fp_equ_handler()
 			Error::multiple_definition(temp_node->name);
 	}
 }
+void Assembler::fp_instruction_handler()
+{
+	LC = LC + 1; // InstrDesc
+	
+	if (line_iterator->operands.size() > 2 || line_iterator->operands.size() < 0)
+	{
+		Error::wrong_number_of_operands(line_iterator->instruction, line_iterator->src_line);
+	}
+
+	if (line_iterator->operands.size() == 2)
+	{
+		LC = LC + 6;
+	}
+	else
+		if (line_iterator->operands.size() == 1)
+		{
+			LC = LC + 3;
+		}
+}
 void Assembler::first_pass()
 {
 	while (line_iterator != line_list.end())
@@ -290,6 +309,11 @@ void Assembler::first_pass()
 		{
 			(this->*(map[line_iterator->directive]))();
 		}
+		else
+			if (line_iterator->is_instruction)
+			{
+				fp_instruction_handler();
+			}
 		line_iterator++;
 	}
 }
@@ -297,8 +321,8 @@ std::string Assembler::assemble_line_list()
 {
 	first_pass();
 	
-	//std::cout << symtab;
-	std::cout << shtab;
+	std::cout << symtab;
+	//std::cout << shtab;
 	return "asdasd";
 }
 

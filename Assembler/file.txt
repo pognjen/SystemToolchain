@@ -1,18 +1,17 @@
 .text
 .global _start
-
 _start:
-	mov r0,r1
-	xchg r5,r6
-	call main
+	movb r0,r1
+	xchgw r5,r6
+	callb main
 	call exit
-	
 main:
-	mov r0,r1
+	movb r0,r1
 	xchg r5,r6
-	ret
-.data	
-x:	.skip 10
+	retb
+.data
+x:	
+.skip 10
 .align 6
 .section my_section, rwx
 m:.byte 1,2,3,4,5

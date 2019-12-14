@@ -132,6 +132,11 @@ public:
 		std::cout << "Error: directive " <<directive<<" requires two operands on line " << line_number << "\n";
 		exit(-1);
 	}
+	static void wrong_number_of_operands(std::string instruction, int line_number)
+	{
+		std::cout << "Error: instruction " << instruction << " has wrong number of operands on line " << line_number << "\n";
+		exit(-1);
+	}
 };
 
 #endif

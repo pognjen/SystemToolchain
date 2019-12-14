@@ -20,7 +20,6 @@ class Token
 public:
     TokenType type;
     std::string token_string;
-
 public:
     Token() = default;
     Token(TokenType type, std::string token_string)
