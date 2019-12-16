@@ -79,7 +79,7 @@ public:
 	}
 	static void invalid_operand_type(int line_number)
 	{
-		std::cout << "Error: .global requires operands on line "<<line_number<<"\n";
+		std::cout << "Error: wrong type of operands on line "<<line_number<<"\n";
 		exit(-1);
 	}
 	static void skip_requires_one_operand(int line_number)

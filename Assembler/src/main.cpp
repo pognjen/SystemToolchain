@@ -30,11 +30,11 @@ int main(int argc, char* argv[])
     // parse token list
      Parser parser(token_list);
 	 std::list<Line> line_list = parser.parse_token_list();
-	 for (auto& it: line_list)
+	 /*for (auto& it: line_list)
 	 {
 		 std::cout<<it<<'\n';
-	 }
+	 }*/
 
-	 //Assembler assembler(line_list);
-	 //assembler.assemble_line_list();
+	 Assembler assembler(line_list);
+	 assembler.assemble_line_list();
 }

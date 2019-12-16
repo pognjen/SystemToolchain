@@ -223,14 +223,18 @@ void Assembler::fp_custom_section_handler()
 		Error::section_requires_one_operand(line_iterator->src_line);
 	}
 	current_section = line_iterator->operands.front().symbol;
-	std::string rwx = line_iterator->operands.back().symbol;
 	LC = 0;
 	current_rwx = 0;
-	for (int i=0;i<rwx.size();i++)
+	if (line_iterator->operands.size() == 2)
 	{
-		if (rwx[i] == 'R' || rwx[i] == 'r') current_rwx = current_rwx & R_MASK;
-		if (rwx[i] == 'W' || rwx[i] == 'w') current_rwx = current_rwx & W_MASK;
-		if (rwx[i] == 'X' || rwx[i] == 'x') current_rwx = current_rwx & X_MASK;
+		std::string rwx = line_iterator->operands.back().symbol;
+
+		for (int i = 0; i < rwx.size(); i++)
+		{
+			if (rwx[i] == 'R' || rwx[i] == 'r') current_rwx = current_rwx | R_MASK;
+			if (rwx[i] == 'W' || rwx[i] == 'w') current_rwx = current_rwx | W_MASK;
+			if (rwx[i] == 'X' || rwx[i] == 'x') current_rwx = current_rwx | X_MASK;
+		}
 	}
 	SymbolTableNode* temp_node = symtab.find_symbol(current_section);
 	if (temp_node != 0)
@@ -321,7 +325,12 @@ void Assembler::first_pass()
 			{
 				fp_instruction_handler();
 			}
+		std::list<Line>::iterator prev_iterator = line_iterator;
 		line_iterator++;
+		if (line_iterator == line_list.end() && prev_iterator->directive != ".end")
+		{
+			fp_end_handler();
+		}
 	}
 
 	for (int i = 0; i < symtab.symtab.size(); i++)
