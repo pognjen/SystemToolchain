@@ -21,20 +21,20 @@ int main(int argc, char* argv[])
     Lexer lexer(file_content);
     std::list<Token> token_list = lexer.get_token_list();
 
-    /*std::list<Token>::iterator it;
-    for (it = token_list.begin(); it != token_list.end(); it++)
+    std::list<Token>::iterator it;
+    //for (it = token_list.begin(); it != token_list.end(); it++)
     {
-        std::cout << it->token_string << " : " << it->type << '\n';
-    }*/
+       // std::cout << it->token_string << " : " << it->type << '\n';
+    }
 
     // parse token list
      Parser parser(token_list);
-     std::list<Line> line_list = parser.parse_token_list();
-	 //for (auto& it: line_list)
+	 std::list<Line> line_list = parser.parse_token_list();
+	 for (auto& it: line_list)
 	 {
-		 //std::cout<<it<<'\n';
+		 std::cout<<it<<'\n';
 	 }
 
-	 Assembler assembler(line_list);
-	 assembler.assemble_line_list();
+	 //Assembler assembler(line_list);
+	 //assembler.assemble_line_list();
 }

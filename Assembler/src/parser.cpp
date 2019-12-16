@@ -1,5 +1,4 @@
 #include "error.h"
-#include "lexer.h"
 #include "parser.h"
 #include <cstdint>
 
@@ -15,13 +14,13 @@ int Parser::read_dec_literal(int sign)
 		i = i + 2;
 		is_hex = true;
 	}
-    for (; i < literal.size(); i++)
+   /* for (; i < literal.size(); i++)
     {
-        if (literal[i] < '0' || literal[i] > '9')
+        if (!isdigit(literal[i]) && (!is_hex))
         {
            Error::literal_expected(Lexer::get_line_number(token_list,token_iterator));
         }
-    }
+    }*/
     int retVal ;
 	
 	if (is_hex) retVal = stoi(literal,0,16);
@@ -62,7 +61,7 @@ void Parser::read_operand_list()
 {
     std::string type = token_iterator->type;
     if (type == "PLUS" || type == "MINUS" || type == "LITERAL" || type == "AMPERSAND"
-        || type == "DOLLAR" || type == "ASTERISK" || type == "SYMBOL" || type == "REGISTER")
+        || type == "DOLLAR" || type == "ASTERISK" || type == "SYMBOL" || type == "REGISTER" || type == "DIRECTIVE")
     {
         while (1)
         {
@@ -75,11 +74,16 @@ void Parser::read_operand_list()
                     sign = -1;
                 }
 
-                if (type != "LITERAL")
+                if (type == "PLUS" || type == "MINUS")
                 {
                     token_iterator++;
+					type = token_iterator->type;
                 }
 
+				if (type != "LITERAL")
+				{
+					Error::literal_expected(Lexer::get_line_number(token_list,token_iterator));
+				}
                 int retVal = read_dec_literal(sign);
 
                 operand->is_word = true;
@@ -210,7 +214,7 @@ void Parser::read_operand_list()
                     Error::symbol_expected_after_dollar(Lexer::get_line_number(token_list,token_iterator));
                 }
             }
-            else if (type == "SYMBOL")
+            else if (type == "SYMBOL" || type == "DIRECTIVE" )
             {
                 operand->is_word = true;
                 operand->is_byte = false;
@@ -340,12 +344,13 @@ std::list<Line> Parser::parse_token_list()
     {
         int end = read_line();
 		
-        if (end || line_pointer->directive == ".end") 
+		line_pointer->src_line = Line::line_number;
+        line_list.push_back(*line_pointer);
+
+		if (end || line_pointer->directive == ".end")
 		{
 			break;
 		}
-		line_pointer->src_line = Line::line_number;
-        line_list.push_back(*line_pointer);
     }
     return line_list;
 }

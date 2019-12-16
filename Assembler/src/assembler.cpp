@@ -64,10 +64,10 @@ void Assembler::fp_label_handler()
 }
 void Assembler::fp_global_handler()
 {
-	if (current_section == "")
+	/*if (current_section == "")
 	{
 		Error::global_not_in_section(line_iterator->src_line);
-	}
+	}*/
 
 	if (line_iterator->operands.size() == 0)
 	{
@@ -78,7 +78,7 @@ void Assembler::fp_global_handler()
 	{
 		if (it.type == ABS)
 		{
-			SymbolTableNode* temp_node = symtab.find_symbol(line_iterator->label);
+			SymbolTableNode* temp_node = symtab.find_symbol(it.symbol);
 			if (temp_node != 0)
 			{
 				if (temp_node->section == "UNDEF") Error::multiple_definition(temp_node->name);
@@ -97,10 +97,10 @@ void Assembler::fp_global_handler()
 
 void Assembler::fp_extern_handler()
 {
-	if (current_section == "")
+	/*if (current_section == "")
 	{
 		Error::extern_not_in_section(line_iterator->src_line);
-	}
+	}*/
 	if (line_iterator->operands.size() == 0)
 	{
 		Error::global_requires_operands(line_iterator->src_line);
@@ -109,7 +109,7 @@ void Assembler::fp_extern_handler()
 	{
 		if (it.type == ABS)
 		{
-			SymbolTableNode* temp_node = symtab.find_symbol(line_iterator->label);
+			SymbolTableNode* temp_node = symtab.find_symbol(it.symbol);
 			if (temp_node != 0)
 			{
 				Error::multiple_definition(temp_node->name);
@@ -299,6 +299,13 @@ void Assembler::fp_instruction_handler()
 			LC = LC + 3;
 		}
 }
+void Assembler::fp_end_handler()
+{
+	if (current_section != "")
+	{
+		shtab.insert_sh_node(current_section, LC, current_rwx);
+	}
+}
 void Assembler::first_pass()
 {
 	while (line_iterator != line_list.end())
@@ -316,13 +323,22 @@ void Assembler::first_pass()
 			}
 		line_iterator++;
 	}
+
+	for (int i = 0; i < symtab.symtab.size(); i++)
+	{
+		if (symtab.symtab[i]->import_export == EXPORTED && symtab.symtab[i]->section == "UNDEF")
+		{
+			Error::symbol_not_defined(symtab.symtab[i]->name);
+		}
+	}
 }
 std::string Assembler::assemble_line_list()
 {
 	first_pass();
 	
 	std::cout << symtab;
-	//std::cout << shtab;
+	std::cout << "------\n";
+	std::cout << shtab;
 	return "asdasd";
 }
 
@@ -343,4 +359,5 @@ Assembler::Assembler(std::list<Line> line_list)
 	map[".word"] = &Assembler::fp_word_handler;
 	map[".skip"] = &Assembler::fp_skip_handler;
 	map[".align"] = &Assembler::fp_align_handler;
+	map[".end"] = &Assembler::fp_end_handler;
 }

@@ -122,6 +122,7 @@ private:
 	void fp_custom_section_handler();
 	void fp_equ_handler();
 	void fp_instruction_handler();
+	void fp_end_handler();
 	unsigned int LC;
 	std::string current_section;
 	char current_rwx;

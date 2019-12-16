@@ -44,7 +44,7 @@ public:
     }
     static void right_bracket_expected(int line_number)
     {
-        std::cout << "Error: [ expected"<<" on line "<<line_number<<"\n";
+        std::cout << "Error: ] expected"<<" on line "<<line_number<<"\n";
         exit(-1);
     }
     static void symbol_expected_after_dollar(int line_number)
@@ -135,6 +135,11 @@ public:
 	static void wrong_number_of_operands(std::string instruction, int line_number)
 	{
 		std::cout << "Error: instruction " << instruction << " has wrong number of operands on line " << line_number << "\n";
+		exit(-1);
+	}
+	static void symbol_not_defined(std::string symbol)
+	{
+		std::cout << "Error: symbol " << symbol << " declared .global but was not defined\n";
 		exit(-1);
 	}
 };

@@ -1,19 +1,42 @@
 #include "lexer.h"
 #include "error.h"
+
+bool Lexer::check_hex(char c)
+{
+	switch (c)
+	{
+		case 'A':
+		case 'B':
+		case 'C':
+		case 'D':
+		case 'E':
+		case 'F':
+		case 'a':
+		case 'b':
+		case 'c':
+		case 'd':
+		case 'e':
+		case 'f':
+			return true;
+	}
+	return false;
+}
+
 TokenType Lexer::deduce_token_type(std::string& token_string)
 {
     int current_index = 0;
-
+	bool is_hex = false;
     int flag = 1;
 
     if (token_string.size() >= 2 && token_string[0] == '0' && token_string[1] == 'x')
     {
+		is_hex = true;
         current_index += 2;
     }
 
     while (current_index != token_string.size())
     {
-        if (!isdigit(token_string[current_index]))
+        if (!isdigit(token_string[current_index]) && !(is_hex && Lexer::check_hex(token_string[current_index])))
         {
             flag = 0;
             break;
@@ -68,8 +91,8 @@ Token Lexer::get_next_multichar_token()
 
     int i = 0;
 
-    while (token_pointer < file_content.size() && isalnum(file_content[token_pointer])
-        || file_content[token_pointer] == '_' || file_content[token_pointer] == '.')
+    while (token_pointer < file_content.size() && (isalnum(file_content[token_pointer])
+        || file_content[token_pointer] == '_' || file_content[token_pointer] == '.'))
     {
         token.token_string += file_content[token_pointer];
         token_pointer++;
@@ -136,7 +159,7 @@ Token Lexer::get_next_token()
             token.type = "COMMENT";
             while (file_content[token_pointer] != '\n' && token_pointer < file_content.size())
                 token_pointer++;
-            token_pointer--; // catch the last token
+            //token_pointer--; // catch the last token
             break;
         case '+':
             token.type = "PLUS";
@@ -194,7 +217,7 @@ std::list<Token> Lexer::get_token_list()
 
         if (token.type != "UNKNOWN")
         {
-            list.push_back(token);
+            if (token.type != "COMMENT") list.push_back(token);
 			
 			if (token.type == "SYMBOL" && isdigit(token.token_string[0]))
 			{
