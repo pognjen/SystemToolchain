@@ -142,6 +142,11 @@ public:
 		std::cout << "Error: symbol " << symbol << " declared .global but was not defined\n";
 		exit(-1);
 	}
+	static void immediate_must_not_be_dst(int line_number)
+	{
+		std::cout << "Error: there can not be immediate value as destination operand on line " << line_number << "\n";
+		exit(-1);
+	}
 };
 
 #endif

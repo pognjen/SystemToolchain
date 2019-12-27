@@ -86,8 +86,16 @@ void Parser::read_operand_list()
 				}
                 int retVal = read_dec_literal(sign);
 
-                operand->is_word = true;
-                operand->is_byte = false;
+				if (retVal <= INT8_MAX && retVal >= INT8_MIN)
+				{
+					operand->is_word = false;
+					operand->is_byte = true;
+				}
+				else
+				{
+					operand->is_word = true;
+					operand->is_byte = false;
+				}
                 operand->type = IMMED;
                 operand->literal = retVal;
 
@@ -164,7 +172,16 @@ void Parser::read_operand_list()
                         {
                             operand->type = REGINDDISP_IMMED;
                             operand->literal = read_dec_literal(sign);
-
+							if (operand->literal < INT8_MAX && operand->literal > INT8_MIN)
+							{
+								operand->is_word = false;
+								operand->is_byte = true;
+							}
+							else
+							{
+								operand->is_word = true;
+								operand->is_byte = false;
+							}
                             // global_token_ptr = global_token_ptr->next;
                             type = token_iterator->type;
                         }
@@ -251,6 +268,7 @@ void Parser::read_operand_list()
                         operand->is_byte = false;
                         operand->type = MEMDIR;
                         operand->literal = read_dec_literal(sign);
+
                         line_pointer->operands.push_back(*operand);
 
                         // global_token_ptr = global_token_ptr->next;

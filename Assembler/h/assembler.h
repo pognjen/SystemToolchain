@@ -110,7 +110,13 @@ private:
 	std::unordered_map<std::string,method_pointer> map;
 	std::list<Line> line_list;
 	std::list<Line>::iterator line_iterator;
+
+	std::string text_section;
+	std::string data_section;
+	std::unordered_map<std::string, std::string> custom_sections;
+
 	void first_pass();
+	void second_pass();
 	void fp_label_handler();
 	void fp_global_handler();
 	void fp_extern_handler();

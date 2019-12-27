@@ -59,14 +59,16 @@ TokenType Lexer::deduce_token_type(std::string& token_string)
         }
     }
 
-	if (map.find(token_string) != map.end())
+	if (directives.find(token_string) != directives.end()) return "DIRECTIVE";
+	
+	if (instructions.find(token_string) != instructions.end())
 	{
-		return map[token_string];
+		return "INSTRUCTION";
 	}
 	else 
 	{
 		std::string substring = token_string.substr(0, token_string.size() - 1);
-		if (map.find(substring) != map.end() && substring != "")
+		if (instructions.find(substring) != instructions.end() && substring != "")
 		{
 			if (token_string[token_string.size() - 1] == 'b')
 				return "INSTRUCTIONB";
@@ -181,7 +183,11 @@ Token Lexer::get_next_token()
             token = get_next_multichar_token();
             break;
     }
-
+	if (token.token_string == "PC" || token.token_string == "pc" || token.token_string == "SP"
+		|| token.token_string == "sp" || token.token_string == "PSW" || token.token_string == "psw")
+	{
+		token.type = "REGISTER";
+	}
     return token;
 }
 

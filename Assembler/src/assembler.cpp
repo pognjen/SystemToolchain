@@ -286,22 +286,89 @@ void Assembler::fp_equ_handler()
 }
 void Assembler::fp_instruction_handler()
 {
-	LC = LC + 1; // InstrDesc
-	
-	if (line_iterator->operands.size() > 2 || line_iterator->operands.size() < 0)
+	if (current_section == "")
 	{
-		Error::wrong_number_of_operands(line_iterator->instruction, line_iterator->src_line);
+		Error::symbol_not_in_section("neki_simbol", line_iterator->src_line);
 	}
+	LC = LC + 1; // InstrDesc
 
+	if (line_iterator->operands.size() > 2) Error::wrong_number_of_operands(line_iterator->instruction, line_iterator->src_line);
+
+	switch (line_iterator->operands.front().type)
+	{
+	case REGDIR: 
+		LC = LC + 1; //op1 desc
+		break;
+	case REGINDDISP_IMMED: 
+		LC = LC + 1; //op1 desc
+		if (line_iterator->operands.front().literal != 0)
+		{
+			if (line_iterator->operands.front().literal <= INT8_MAX && line_iterator->operands.front().literal >= INT8_MIN)
+			{
+				LC = LC + 1;
+			}
+			else
+				LC = LC + 2;
+		}
+		break;
+	case PCREL:
+	case REGINDDISP_SYM_VALUE:
+		LC = LC + 3; //op1 desc
+		break;
+	case MEMDIR:
+	case ABS:
+		LC = LC + 3;
+		break;
+	case IMMED:
+		LC = LC + 1;
+		if (line_iterator->operands.back().is_byte) LC = LC + 1;
+		else
+			LC = LC + 2;
+		break;
+	case IMMED_SYM_VALUE:
+		LC = LC + 3;
+		break;
+	}
+	
+	
 	if (line_iterator->operands.size() == 2)
 	{
-		LC = LC + 6;
-	}
-	else
-		if (line_iterator->operands.size() == 1)
+		switch (line_iterator->operands.front().type)
 		{
+		case REGDIR:
+			LC = LC + 1; //op1 desc
+			break;
+		case REGINDDISP_IMMED:
+			LC = LC + 1; //op1 desc
+			if (line_iterator->operands.front().literal != 0)
+			{
+				if (line_iterator->operands.front().literal <= INT8_MAX && line_iterator->operands.front().literal >= INT8_MIN)
+				{
+					LC = LC + 1;
+				}
+				else
+					LC = LC + 2;
+			}
+			break;
+		case PCREL:
+		case REGINDDISP_SYM_VALUE:
+			LC = LC + 3; //op1 desc
+			break;
+		case MEMDIR:
+		case ABS:
 			LC = LC + 3;
+			break;
+		case IMMED:
+			LC = LC + 1;
+			if (line_iterator->operands.back().is_byte) LC = LC + 1;
+			else
+				LC = LC + 2;
+			break;
+		case IMMED_SYM_VALUE:
+			LC = LC + 3;
+			break;
 		}
+	}
 }
 void Assembler::fp_end_handler()
 {
@@ -341,10 +408,20 @@ void Assembler::first_pass()
 		}
 	}
 }
+void Assembler::second_pass()
+{
+	line_iterator = line_list.begin();
+	
+	while (line_iterator != line_list.end())
+	{
+
+	}
+}
 std::string Assembler::assemble_line_list()
 {
 	first_pass();
-	
+	//second_pass();
+
 	std::cout << symtab;
 	std::cout << "------\n";
 	std::cout << shtab;
