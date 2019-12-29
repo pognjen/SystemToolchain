@@ -102,12 +102,42 @@ private:
 		return os;
 	}
 };
+typedef enum RelocationType {REL_16,REL_PC_16};
+class RelocationTableNode
+{
+private:
+	friend class RelocationTable;
+	friend class Assembler;
+	std::string section;
+	unsigned offset;
+	RelocationType type;
+	unsigned symtab_index;
+public:
+	RelocationTableNode(std::string section, unsigned offset, RelocationType type, unsigned symtab_index)
+	{
+		this->section = section;
+		this->offset = offset;
+		this->type = type;
+		this->symtab_index = symtab_index;
+	}
+};
+
+class RelocationTable
+{
+private:
+	friend class Assembler;
+	std::vector<RelocationTableNode*> reltab;
+public:
+	void insert(std::string section, unsigned offset, RelocationType type, unsigned symtab_index);
+	RelocationTableNode* find(std::string section, unsigned offset);
+};
 
 class Assembler
 {
 private:
 	typedef void(Assembler::*method_pointer)();	
-	std::unordered_map<std::string,method_pointer> map;
+	std::unordered_map<std::string,method_pointer> fp_map;
+	std::unordered_map<std::string, method_pointer> sp_map;
 	std::list<Line> line_list;
 	std::list<Line>::iterator line_iterator;
 
@@ -120,15 +150,21 @@ private:
 	void fp_label_handler();
 	void fp_global_handler();
 	void fp_extern_handler();
+	void sp_skip_handler();
 	void fp_skip_handler();
 	void fp_byte_handler();
+	void sp_word_handler();
 	void fp_word_handler();
+	void sp_align_handler();
 	void fp_align_handler();
+	void sp_section_handler();
 	void fp_section_handler();
 	void fp_custom_section_handler();
+	void sp_custom_section_handler();
 	void fp_equ_handler();
 	void fp_instruction_handler();
 	void fp_end_handler();
+	std::string dec_to_hex(int val);
 	unsigned int LC;
 	std::string current_section;
 	char current_rwx;

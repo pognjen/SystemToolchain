@@ -2,7 +2,7 @@
 #include "file_content.h"
 #include "error.h"
 #include "assembler.h"
-
+#include <sstream>
 int main(int argc, char* argv[])
 {
     // parse cmd arguments
@@ -34,7 +34,14 @@ int main(int argc, char* argv[])
 	 {
 		 std::cout<<it<<'\n';
 	 }*/
+	 /*std::stringstream ss;
+	 ss << std::hex << (((uint8_t)26) << 3); // int decimal_value
+	 std::string res(ss.str());
+	 std::cout << res;
+	 */
+	 //std::string temp = std::to_string();
 
+	 //for (int i=0;i<temp.size();i++) std::cout << temp[i];
 	 Assembler assembler(line_list);
-	 assembler.assemble_line_list();
+	 //assembler.assemble_line_list();
 }

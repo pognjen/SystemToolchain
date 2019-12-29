@@ -1,5 +1,6 @@
 #include "assembler.h"
 #include "error.h"
+#include <sstream>
 void SymbolTable::insert_symbol(std::string name,int value,int visibility,std::string section,int import_export)
 {
 	SymbolTableNode* node = new SymbolTableNode(name,value,visibility,section,import_export);
@@ -245,6 +246,8 @@ void Assembler::fp_custom_section_handler()
 		symtab.insert_symbol(current_section,0,LOCAL,current_section,NONE);
 }
 
+
+
 void Assembler::fp_equ_handler()
 {
 	if (current_section == "")
@@ -286,7 +289,7 @@ void Assembler::fp_equ_handler()
 }
 void Assembler::fp_instruction_handler()
 {
-	if (current_section == "")
+	if (current_section != ".text")
 	{
 		Error::symbol_not_in_section("neki_simbol", line_iterator->src_line);
 	}
@@ -294,80 +297,33 @@ void Assembler::fp_instruction_handler()
 
 	if (line_iterator->operands.size() > 2) Error::wrong_number_of_operands(line_iterator->instruction, line_iterator->src_line);
 
-	switch (line_iterator->operands.front().type)
+	for (auto& op: line_iterator->operands)
 	{
-	case REGDIR: 
-		LC = LC + 1; //op1 desc
-		break;
-	case REGINDDISP_IMMED: 
-		LC = LC + 1; //op1 desc
-		if (line_iterator->operands.front().literal != 0)
+		if (op.type == IMMED)
 		{
-			if (line_iterator->operands.front().literal <= INT8_MAX && line_iterator->operands.front().literal >= INT8_MIN)
+			if (op.is_byte) LC = LC + 2;
+			else
+				LC = LC + 3;
+		}
+		else
+			if (op.type == IMMED_SYM_VALUE || op.type == PCREL || op.type == REGINDDISP_SYM_VALUE || op.type == MEMDIR || op.type == ABS)
 			{
-				LC = LC + 1;
+				LC = LC + 3;
 			}
 			else
-				LC = LC + 2;
-		}
-		break;
-	case PCREL:
-	case REGINDDISP_SYM_VALUE:
-		LC = LC + 3; //op1 desc
-		break;
-	case MEMDIR:
-	case ABS:
-		LC = LC + 3;
-		break;
-	case IMMED:
-		LC = LC + 1;
-		if (line_iterator->operands.back().is_byte) LC = LC + 1;
-		else
-			LC = LC + 2;
-		break;
-	case IMMED_SYM_VALUE:
-		LC = LC + 3;
-		break;
-	}
-	
-	
-	if (line_iterator->operands.size() == 2)
-	{
-		switch (line_iterator->operands.front().type)
-		{
-		case REGDIR:
-			LC = LC + 1; //op1 desc
-			break;
-		case REGINDDISP_IMMED:
-			LC = LC + 1; //op1 desc
-			if (line_iterator->operands.front().literal != 0)
-			{
-				if (line_iterator->operands.front().literal <= INT8_MAX && line_iterator->operands.front().literal >= INT8_MIN)
+				if (op.type == REGDIR)
 				{
 					LC = LC + 1;
 				}
 				else
-					LC = LC + 2;
-			}
-			break;
-		case PCREL:
-		case REGINDDISP_SYM_VALUE:
-			LC = LC + 3; //op1 desc
-			break;
-		case MEMDIR:
-		case ABS:
-			LC = LC + 3;
-			break;
-		case IMMED:
-			LC = LC + 1;
-			if (line_iterator->operands.back().is_byte) LC = LC + 1;
-			else
-				LC = LC + 2;
-			break;
-		case IMMED_SYM_VALUE:
-			LC = LC + 3;
-			break;
-		}
+					if (op.type == REGINDDISP_IMMED)
+					{
+						if (op.literal == 0) LC = LC + 1;
+						else
+							if (op.is_byte) LC = LC + 2;
+							else
+								LC = LC + 3;
+					}			
 	}
 }
 void Assembler::fp_end_handler()
@@ -377,6 +333,13 @@ void Assembler::fp_end_handler()
 		shtab.insert_sh_node(current_section, LC, current_rwx);
 	}
 }
+std::string Assembler::dec_to_hex(int val)
+{
+	std::stringstream ss;
+	ss << std::hex << (((uint8_t)val) << 3); // int decimal_value
+	std::string res(ss.str());
+	return res;
+}
 void Assembler::first_pass()
 {
 	while (line_iterator != line_list.end())
@@ -385,7 +348,7 @@ void Assembler::first_pass()
 		
 		if (line_iterator->is_directive)
 		{
-			(this->*(map[line_iterator->directive]))();
+			(this->*(fp_map[line_iterator->directive]))();
 		}
 		else
 			if (line_iterator->is_instruction)
@@ -408,8 +371,48 @@ void Assembler::first_pass()
 		}
 	}
 }
+void Assembler::sp_section_handler()
+{
+	current_section = line_iterator->directive;
+	LC = 0;
+}
+void Assembler::sp_custom_section_handler()
+{
+	current_section = line_iterator->operands.front().symbol;
+	LC = 0;
+}
+void Assembler::sp_skip_handler()
+{
+	int i = line_iterator->operands.front().literal;
+	while (i > 0)
+	{
+		if (current_section == ".text")
+		{
+			text_section += dec_to_hex(instructions["nop"] << 3);
+		}
+		LC = LC + 1;
+		i--;
+	}
+}
+
+void Assembler::sp_align_handler()
+{
+	unsigned int mask = ~((~0) << line_iterator->operands.front().literal);
+	while (mask & LC)
+	{
+		if (current_section == ".text") text_section += dec_to_hex(instructions["nop"] << 3);
+		LC++;
+	}
+}
+void Assembler::sp_word_handler()
+{
+
+}
 void Assembler::second_pass()
 {
+	LC = 0;
+	current_section = "";
+	current_rwx = 0;
 	line_iterator = line_list.begin();
 	
 	while (line_iterator != line_list.end())
@@ -420,11 +423,14 @@ void Assembler::second_pass()
 std::string Assembler::assemble_line_list()
 {
 	first_pass();
-	//second_pass();
+	//
 
 	std::cout << symtab;
 	std::cout << "------\n";
 	std::cout << shtab;
+
+	second_pass();
+
 	return "asdasd";
 }
 
@@ -434,16 +440,39 @@ Assembler::Assembler(std::list<Line> line_list)
 	current_section = "";
 	this->line_list = line_list;
 	line_iterator = this->line_list.begin();
-	map[".text"] = &Assembler::fp_section_handler;
-	map[".bss"] = &Assembler::fp_section_handler;
-	map[".data"] = &Assembler::fp_section_handler;
-	map[".section"] = &Assembler::fp_custom_section_handler;
-	map[".extern"] = &Assembler::fp_extern_handler;
-	map[".global"] = &Assembler::fp_global_handler;
-	map[".equ"] = &Assembler::fp_equ_handler;
-	map[".byte"] = &Assembler::fp_byte_handler;
-	map[".word"] = &Assembler::fp_word_handler;
-	map[".skip"] = &Assembler::fp_skip_handler;
-	map[".align"] = &Assembler::fp_align_handler;
-	map[".end"] = &Assembler::fp_end_handler;
+	fp_map[".text"] = &Assembler::fp_section_handler;
+	fp_map[".bss"] = &Assembler::fp_section_handler;
+	fp_map[".data"] = &Assembler::fp_section_handler;
+	fp_map[".section"] = &Assembler::fp_custom_section_handler;
+	fp_map[".extern"] = &Assembler::fp_extern_handler;
+	fp_map[".global"] = &Assembler::fp_global_handler;
+	fp_map[".equ"] = &Assembler::fp_equ_handler;
+	fp_map[".byte"] = &Assembler::fp_byte_handler;
+	fp_map[".word"] = &Assembler::fp_word_handler;
+	fp_map[".skip"] = &Assembler::fp_skip_handler;
+	fp_map[".align"] = &Assembler::fp_align_handler;
+	fp_map[".end"] = &Assembler::fp_end_handler;
+
+	sp_map[".text"] = &Assembler::sp_section_handler;
+	sp_map[".bss"] = &Assembler::sp_section_handler;
+	sp_map[".data"] = &Assembler::sp_section_handler;
+	sp_map[".section"] = &Assembler::sp_custom_section_handler;
+	sp_map[".skip"] = &Assembler::sp_skip_handler;
+	sp_map[".align"] = &Assembler::sp_align_handler;
+	sp_map[".word"] = &Assembler::sp_word_handler;
+}
+
+void RelocationTable::insert(std::string section, unsigned offset, RelocationType type, unsigned symtab_index)
+{
+	RelocationTableNode* node = new RelocationTableNode(section, offset, type, symtab_index);
+	reltab.push_back(node);
+}
+
+RelocationTableNode* RelocationTable::find(std::string section, unsigned offset)
+{
+	for (auto& ptr : reltab) 
+	{
+		if (ptr->section == section && ptr->offset == offset) return ptr;
+	}
+	return 0;
 }
