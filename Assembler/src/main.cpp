@@ -1,4 +1,3 @@
-#include <iostream>
 #include "file_content.h"
 #include "error.h"
 #include "assembler.h"
@@ -43,5 +42,6 @@ int main(int argc, char* argv[])
 
 	 //for (int i=0;i<temp.size();i++) std::cout << temp[i];
 	 Assembler assembler(line_list);
-	 //assembler.assemble_line_list();
+	 //std::cout<< assembler.byte_to_hex(26 << 3);
+	 assembler.assemble_line_list();
 }

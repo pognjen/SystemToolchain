@@ -3,7 +3,8 @@
 
 #include "parser.h"
 #include <vector>
-
+#include <unordered_map>
+#include <unordered_set>
 #define LOCAL 0
 #define GLOBAL 1
 
@@ -102,7 +103,7 @@ private:
 		return os;
 	}
 };
-typedef enum RelocationType {REL_16,REL_PC_16};
+enum RelocationType {REL_16,REL_PC_16};
 class RelocationTableNode
 {
 private:
@@ -111,14 +112,14 @@ private:
 	std::string section;
 	unsigned offset;
 	RelocationType type;
-	unsigned symtab_index;
+	std::string symbol;
 public:
-	RelocationTableNode(std::string section, unsigned offset, RelocationType type, unsigned symtab_index)
+	RelocationTableNode(std::string section, unsigned offset, RelocationType type, std::string symbol)
 	{
 		this->section = section;
 		this->offset = offset;
 		this->type = type;
-		this->symtab_index = symtab_index;
+		this->symbol = symbol;
 	}
 };
 
@@ -128,7 +129,7 @@ private:
 	friend class Assembler;
 	std::vector<RelocationTableNode*> reltab;
 public:
-	void insert(std::string section, unsigned offset, RelocationType type, unsigned symtab_index);
+	void insert(std::string section, unsigned offset, RelocationType type, std::string symbol);
 	RelocationTableNode* find(std::string section, unsigned offset);
 };
 
@@ -152,6 +153,7 @@ private:
 	void fp_extern_handler();
 	void sp_skip_handler();
 	void fp_skip_handler();
+	void sp_byte_handler();
 	void fp_byte_handler();
 	void sp_word_handler();
 	void fp_word_handler();
@@ -164,13 +166,15 @@ private:
 	void fp_equ_handler();
 	void fp_instruction_handler();
 	void fp_end_handler();
-	std::string dec_to_hex(int val);
 	unsigned int LC;
 	std::string current_section;
 	char current_rwx;
 	SymbolTable symtab;
 	SectionHeaderTable shtab;
+	RelocationTable reltab;
 public:
+	std::string word_to_hex(int val);
+	std::string byte_to_hex(int val);
 	Assembler(std::list<Line> line_list);
 	std::string assemble_line_list();
 };

@@ -1,6 +1,11 @@
 #include "error.h"
 #include "parser.h"
 #include <cstdint>
+#include <unordered_map>
+#include <unordered_set>
+
+extern std::unordered_map<std::string, int>  instructions_map;
+extern std::unordered_set<std::string>  directives_map;
 
 int Line::line_number = 0;
 

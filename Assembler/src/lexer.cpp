@@ -1,5 +1,11 @@
 #include "lexer.h"
 #include "error.h"
+#include <unordered_map>
+#include <unordered_set>
+
+extern std::unordered_map<std::string, int>  instructions_map;
+extern std::unordered_set<std::string> directives_map;
+
 
 bool Lexer::check_hex(char c)
 {
@@ -59,16 +65,16 @@ TokenType Lexer::deduce_token_type(std::string& token_string)
 		}
 	}
 
-	if (directives.find(token_string) != directives.end()) return "DIRECTIVE";
+	if (directives_map.find(token_string) != directives_map.end()) return "DIRECTIVE";
 
-	if (instructions.find(token_string) != instructions.end())
+	if (instructions_map.find(token_string) != instructions_map.end())
 	{
 		return "INSTRUCTION";
 	}
 	else
 	{
 		std::string substring = token_string.substr(0, token_string.size() - 1);
-		if (instructions.find(substring) != instructions.end() && substring != "")
+		if (instructions_map.find(substring) != instructions_map.end() && substring != "")
 		{
 			if (token_string[token_string.size() - 1] == 'b')
 				return "INSTRUCTIONB";

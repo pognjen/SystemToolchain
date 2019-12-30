@@ -147,6 +147,11 @@ public:
 		std::cout << "Error: there can not be immediate value as destination operand on line " << line_number << "\n";
 		exit(-1);
 	}
+	static void writing_forbiden(std::string section)
+	{
+		std::cout << "Error: you cannot write in section " << section << "\n";
+		exit(-1);
+	}
 };
 
 #endif
