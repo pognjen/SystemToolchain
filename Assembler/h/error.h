@@ -152,6 +152,17 @@ public:
 		std::cout << "Error: you cannot write in section " << section << "\n";
 		exit(-1);
 	}
+	static void wrong_operands_numbers(std::string instr,int num_operands,int line_number)
+	{
+		std::cout << "Error: instruction " << instr << " requires " << num_operands << " on line " << line_number << '\n';
+		exit(-1);
+	}
+	static void execution_forbidden(std::string section)
+	{
+		std::cout << "Error: section " <<section<<"is forbidden for execution\n";
+		exit(-1);
+	}
+
 };
 
 #endif

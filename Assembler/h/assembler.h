@@ -121,6 +121,14 @@ public:
 		this->type = type;
 		this->symbol = symbol;
 	}
+	friend std::ostream& operator<<(std::ostream& os, const RelocationTableNode& n) // for testing
+	{
+		std::vector<std::string> m(2);
+		m[REL_16] = "REL_16";
+		m[REL_PC_16] = "REL_PC_16";
+		os << n.section << " | " << n.offset << " | " << m[n.type] << " | " << n.symbol;
+		return os;
+	}
 };
 
 class RelocationTable
@@ -131,6 +139,14 @@ private:
 public:
 	void insert(std::string section, unsigned offset, RelocationType type, std::string symbol);
 	RelocationTableNode* find(std::string section, unsigned offset);
+	friend std::ostream& operator<<(std::ostream& os, const RelocationTable& table) // for testing
+	{
+		for (int i = 0; i < table.reltab.size(); i++)
+		{
+			os << *(table.reltab[i]) << '\n';
+		}
+		return os;
+	}
 };
 
 class Assembler
@@ -164,8 +180,10 @@ private:
 	void fp_custom_section_handler();
 	void sp_custom_section_handler();
 	void fp_equ_handler();
+	void sp_instruction_handler();
 	void fp_instruction_handler();
 	void fp_end_handler();
+	void do_nothing(){}
 	unsigned int LC;
 	std::string current_section;
 	char current_rwx;

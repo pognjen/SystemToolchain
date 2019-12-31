@@ -45,3 +45,33 @@ std::unordered_set<std::string> directives_map =
 	".global",
 	".end"
 };
+
+std::unordered_map<std::string,int> instructions_op_numbers = 
+{
+	{"halt", 0},
+	{"xchg", 2},
+	{"int", 1},
+	{"mov", 2},
+	{"add", 2},
+	{"sub", 2},
+	{"mul", 2},
+	{"div", 2},
+	{"cmp", 2},
+	{"not", 1},
+	{"and", 2},
+	{"or", 2},
+	{"xor", 2},
+	{"test", 2},
+	{"shl", 2},
+	{"shr", 2},
+	{"push", 1},
+	{"pop", 1},
+	{"jmp", 1},
+	{"jeq", 1},
+	{"jne", 1},
+	{"jgt", 1},
+	{"call", 1},
+	{"ret", 0},
+	{"iret", 0},
+	{"nop", 0}
+};

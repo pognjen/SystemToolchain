@@ -43,5 +43,6 @@ int main(int argc, char* argv[])
 	 //for (int i=0;i<temp.size();i++) std::cout << temp[i];
 	 Assembler assembler(line_list);
 	 //std::cout<< assembler.byte_to_hex(26 << 3);
-	 assembler.assemble_line_list();
+	 std::string text_section = assembler.assemble_line_list();
+	 //std::cout << text_section << '\n';
 }

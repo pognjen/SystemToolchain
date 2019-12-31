@@ -4,7 +4,7 @@
 #include <iomanip>
 extern std::unordered_map<std::string, int>  instructions_map;
 extern std::unordered_set<std::string>  directives_map;
-
+extern std::unordered_map<std::string, int> instructions_op_numbers;
 void SymbolTable::insert_symbol(std::string name,int value,int visibility,std::string section,int import_export)
 {
 	SymbolTableNode* node = new SymbolTableNode(name,value,visibility,section,import_export);
@@ -241,6 +241,8 @@ void Assembler::fp_custom_section_handler()
 			if (rwx[i] == 'X' || rwx[i] == 'x') current_rwx = current_rwx | X_MASK;
 		}
 	}
+	else
+		current_rwx = 7;
 	SymbolTableNode* temp_node = symtab.find_symbol(current_section);
 	if (temp_node != 0)
 	{
@@ -342,7 +344,7 @@ std::string Assembler::word_to_hex(int val)
 	std::stringstream stream;
 	stream << std::setfill('0') << std::setw(4) << std::hex << val;
 	std::string result(stream.str());
-	return result.substr(result.size() - 2);
+	return result.substr(result.size() - 4);
 }
 std::string Assembler::byte_to_hex(int val)
 {
@@ -385,7 +387,6 @@ void Assembler::first_pass()
 void Assembler::sp_section_handler()
 {
 	current_section = line_iterator->directive;
-	current_section = line_iterator->operands.front().symbol;
 	SectionHeaderTableNode* temp = shtab.find_sh_node(current_section);
 	current_rwx = temp->rwx;
 	LC = 0;
@@ -400,25 +401,48 @@ void Assembler::sp_custom_section_handler()
 void Assembler::sp_skip_handler()
 {
 	int i = line_iterator->operands.front().literal;
-	while (i > 0)
-	{
-		if (current_section == ".text")
+		while (i > 0)
 		{
-			text_section += byte_to_hex(instructions_map["nop"] << 3);///////
+			if (current_section == ".text")
+			{
+				text_section += byte_to_hex(instructions_map["nop"] << 3);
+			}
+			else
+				if (current_section == ".data")
+				{
+					data_section += byte_to_hex(0);
+				}
+				else
+					if (current_section != ".bss")
+					{
+						custom_sections[current_section] += byte_to_hex(0);
+					}
+			LC = LC + 1;
+			i--;
 		}
-		LC = LC + 1;
-		i--;
-	}
 }
 
 void Assembler::sp_align_handler()
 {
 	unsigned int mask = ~((~0) << line_iterator->operands.front().literal);
-	while (mask & LC)
-	{
-		text_section += byte_to_hex(instructions_map["nop"] << 3);///////
-		LC++;
-	}
+		while (mask & LC)
+		{
+			if (current_section == ".text")
+			{
+				text_section += byte_to_hex(instructions_map["nop"] << 3);
+			}
+			else
+				if (current_section == ".data")
+				{
+					data_section += byte_to_hex(0);
+				}
+				else
+					if (current_section != ".bss")
+					{
+						custom_sections[current_section] += byte_to_hex(0);
+					}
+			LC = LC + 1;
+		}
 }
 void Assembler::sp_word_handler()
 {
@@ -446,23 +470,29 @@ void Assembler::sp_word_handler()
 						}
 				}
 				else
-				{
-					SymbolTableNode* temp_ptr = symtab.find_symbol(it.symbol);
-					std::string temp = word_to_hex(temp_ptr->value);
-					if (current_section == ".data")
 					{
-						data_section += temp.substr(temp.size() - 2); //lower byte
-						data_section += temp.substr(0, 2); //higher byte
-						RelocationTableNode* node = new RelocationTableNode(current_section, data_section.size() - 4, REL_16, it.symbol);
-					}
-					else
-					{
-						custom_sections[current_section] += temp.substr(temp.size() - 2);
-						custom_sections[current_section] += temp.substr(0, 2);
-						RelocationTableNode* node = new RelocationTableNode(current_section, custom_sections[current_section].size() - 4, REL_16, it.symbol);
-					}
+						SymbolTableNode* temp_ptr = symtab.find_symbol(it.symbol);
+						std::string temp = word_to_hex(temp_ptr->value);
+						if (current_section == ".data")
+						{
+							data_section += temp.substr(temp.size() - 2); //lower byte
+							data_section += temp.substr(0, 2); //higher byte
+							if (temp_ptr->section != "ABS")
+							{
+								reltab.insert(current_section, data_section.size() - 4, REL_16, it.symbol);
+							}
+						}
+						else
+						{
+							custom_sections[current_section] += temp.substr(temp.size() - 2);
+							custom_sections[current_section] += temp.substr(0, 2);
+							if (temp_ptr->section != "ABS")
+							{
+								reltab.insert(current_section, custom_sections[current_section].size() - 4, REL_16, it.symbol);
+							}
+						}
 					
-				}
+					}
 		}
 	}
 	else
@@ -474,16 +504,46 @@ void Assembler::sp_byte_handler()
 	{
 		for (auto& it : line_iterator->operands)
 		{
-			if (it.type != IMMED)
+			SymbolTableNode* temp_ptr = symtab.find_symbol(it.symbol);
+			if (it.type != IMMED && (temp_ptr && temp_ptr->section != "ABS"))
 			{
 				Error::invalid_operand_type(line_iterator->src_line);
 			}
 			else
-				if (it.is_byte)
+				if (it.is_byte || (temp_ptr && temp_ptr->section == "ABS"))
 				{
-					if (current_section == ".data") data_section += byte_to_hex(it.literal);
+					if (current_section == ".data")
+					{
+						if (!temp_ptr || temp_ptr->section != "ABS")
+						{
+							data_section += byte_to_hex(it.literal);
+						}
+						else
+						{
+							if (temp_ptr->value >= INT8_MIN && temp_ptr->value <= INT8_MAX)
+							{
+								data_section += byte_to_hex(temp_ptr->value);
+							}
+							else
+								Error::wrong_literal_width(line_iterator->src_line);
+						}
+					}
 					else
-						custom_sections[current_section] += byte_to_hex(it.literal);
+					{
+						if (temp_ptr->section != "ABS")
+						{
+							custom_sections[current_section] += byte_to_hex(it.literal);
+						}
+						else
+						{
+							if (temp_ptr->value >= INT8_MIN && temp_ptr->value <= INT8_MAX)
+							{
+								custom_sections[current_section] += byte_to_hex(temp_ptr->value);
+							}
+							else
+								Error::wrong_literal_width(line_iterator->src_line);
+						}
+					}
 				}
 				else
 				{
@@ -494,6 +554,21 @@ void Assembler::sp_byte_handler()
 	else
 		Error::writing_forbiden(current_section);
 }
+void Assembler::sp_instruction_handler()
+{
+	if (current_rwx & X_MASK)
+	{
+		if (line_iterator->operands.size() == instructions_op_numbers[line_iterator->instruction])
+		{
+			int first_byte = instructions_map[line_iterator->instruction] << 3; //Set opcode
+
+		}
+		else
+			Error::wrong_operands_numbers(line_iterator->instruction, instructions_op_numbers[line_iterator->instruction], line_iterator->src_line);
+	}
+	else
+		Error::execution_forbidden(current_section);
+}
 void Assembler::second_pass()
 {
 	LC = 0;
@@ -503,21 +578,25 @@ void Assembler::second_pass()
 	
 	while (line_iterator != line_list.end())
 	{
-
+		if (line_iterator->is_directive)
+		{
+			(this->*(sp_map[line_iterator->directive]))();
+		}
+		if (line_iterator->directive == ".end") break;
+		line_iterator++;
 	}
 }
 std::string Assembler::assemble_line_list()
 {
 	first_pass();
-	//
 
-	std::cout << symtab;
+	/*std::cout << symtab;
 	std::cout << "------\n";
-	std::cout << shtab;
+	std::cout << shtab;*/
 
 	second_pass();
-
-	return "asdasd";
+	std::cout << reltab;
+	return data_section;
 }
 
 Assembler::Assembler(std::list<Line> line_list)
@@ -547,6 +626,10 @@ Assembler::Assembler(std::list<Line> line_list)
 	sp_map[".align"] = &Assembler::sp_align_handler;
 	sp_map[".word"] = &Assembler::sp_word_handler;
 	sp_map[".byte"] = &Assembler::sp_byte_handler;
+	sp_map[".extern"] = &Assembler::do_nothing;
+	sp_map[".global"] = &Assembler::do_nothing;
+	sp_map[".equ"] = &Assembler::do_nothing;
+	sp_map[".end"] = &Assembler::do_nothing;
 }
 
 void RelocationTable::insert(std::string section, unsigned offset, RelocationType type, std::string symbol)
