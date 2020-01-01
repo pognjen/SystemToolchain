@@ -2,6 +2,14 @@
 #include "error.h"
 #include <sstream>
 #include <iomanip>
+#define WORD_SIZED_OPERANDS_MASK 4
+#define IMMED_MASK 0
+#define REGDIR_MASK 1
+#define REGIND_MASK 2
+#define REGIND_DISP_8_MASK 3
+#define REGIND_DISP_16_MASK 4
+#define MEMDIR_MASK 5
+
 extern std::unordered_map<std::string, int>  instructions_map;
 extern std::unordered_set<std::string>  directives_map;
 extern std::unordered_map<std::string, int> instructions_op_numbers;
@@ -554,14 +562,95 @@ void Assembler::sp_byte_handler()
 	else
 		Error::writing_forbiden(current_section);
 }
+bool Assembler::check_operands()
+{
+	//Check if operands are same size
+}
+std::string Assembler::one_operand_instruction_handler()
+{
+	Operand op = line_iterator->operands.front();
+	std::vector<std::string> bytes;
+	if (line_iterator->operands_byte)
+	{
+		int second_byte = 0;
+		int third_byte = 0;
+		int fourth_byte = 0;
+		std::string offset_bytes;
+		switch (op.type)
+		{
+		case IMMED: 
+			if (op.is_word) Error::wrong_literal_width(line_iterator->src_line);
+			second_byte = (second_byte | IMMED_MASK) << 5;
+			third_byte = op.literal;
+			return byte_to_hex(second_byte) + byte_to_hex(third_byte);
+		case IMMED_SYM_VALUE:
+			Error::wrong_literal_width(line_iterator->src_line);
+		case REGDIR:
+			if (!op.reg.low && !op.reg.high || op.symbol == "psw") Error::wrong_literal_width(line_iterator->src_line);
+			second_byte = (second_byte | REGDIR_MASK) << 5;
+			second_byte = second_byte | (op.reg.number << 1);
+			if (op.reg.high) second_byte |= 1;
+			return  byte_to_hex(second_byte);
+		case REGINDDISP_IMMED:
+			if (op.literal == 0)
+			{
+				second_byte = (second_byte | REGIND_MASK) << 5;
+				second_byte = second_byte | (op.reg.number << 1);
+				return byte_to_hex(second_byte);
+			}
+			else
+				if (op.is_byte)
+				{
+					second_byte = (second_byte | REGIND_DISP_8_MASK) << 5;
+					second_byte = second_byte | (op.reg.number << 1);
+					third_byte = op.literal;
+					return byte_to_hex(second_byte) + byte_to_hex(third_byte);
+				}
+				else
+				{
+					second_byte = (second_byte | REGIND_DISP_16_MASK) << 5;
+					second_byte = second_byte | (op.reg.number << 1);
+					third_byte = op.literal;
+					std::string offset_bytes = word_to_hex(third_byte);
+					return byte_to_hex(second_byte) + offset_bytes.substr(offset_bytes.size()-2) + offset_bytes.substr(0,2);
+				}
+		case REGINDDISP_SYM_VALUE:
+				second_byte = (second_byte | REGIND_DISP_16_MASK) << 5;
+				second_byte = second_byte | (op.reg.number << 1);
+				third_byte = symtab.find_symbol(op.symbol)->value;
+				offset_bytes = word_to_hex(third_byte);
+				reltab.insert(current_section, shtab.find_sh_node(current_section)->size + 1, REL_16, op.symbol);
+				return byte_to_hex(second_byte) + offset_bytes.substr(offset_bytes.size() - 2) + offset_bytes.substr(0, 2);
+		case PCREL:
+				
+		case ABS:
+			break;
+		case MEMDIR:
+			break;
+		}
+	}
+}
+std::string Assembler::two_operands_instruction_handler()
+{
+
+}
 void Assembler::sp_instruction_handler()
 {
 	if (current_rwx & X_MASK)
 	{
 		if (line_iterator->operands.size() == instructions_op_numbers[line_iterator->instruction])
 		{
-			int first_byte = instructions_map[line_iterator->instruction] << 3; //Set opcode
+			
 
+			int first_byte = instructions_map[line_iterator->instruction] << 3; //Set opcode
+			if (line_iterator->operands_word) first_byte = first_byte | WORD_SIZED_OPERANDS_MASK;
+			text_section += byte_to_hex(first_byte);
+
+			switch (line_iterator->operands.size())
+			{
+				case 1:one_operand_instruction_handler(); break;
+				case 2:two_operands_instruction_handler(); break;
+			}
 		}
 		else
 			Error::wrong_operands_numbers(line_iterator->instruction, instructions_op_numbers[line_iterator->instruction], line_iterator->src_line);

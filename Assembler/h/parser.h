@@ -23,7 +23,7 @@ class Register
     friend class Directive;
     friend class Line;
     friend class Parser;
-
+	friend class Assembler;
 private:
     int number;
     bool low = false;

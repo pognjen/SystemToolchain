@@ -162,7 +162,11 @@ public:
 		std::cout << "Error: section " <<section<<"is forbidden for execution\n";
 		exit(-1);
 	}
-
+	static void wrong_operands_size(int line_number)
+	{
+		std::cout << "Error: wrong siye of operands on line " << line_number<< "\n";
+		exit(-1);
+	}
 };
 
 #endif
