@@ -9,6 +9,7 @@
 #define REGIND_DISP_8_MASK 3
 #define REGIND_DISP_16_MASK 4
 #define MEMDIR_MASK 5
+#define PC 7
 
 extern std::unordered_map<std::string, int>  instructions_map;
 extern std::unordered_set<std::string>  directives_map;
@@ -564,12 +565,18 @@ void Assembler::sp_byte_handler()
 }
 bool Assembler::check_operands()
 {
-	//Check if operands are same size
+	if (line_iterator->operands.size() == 2)
+	{
+		if (line_iterator->operands.front().type == IMMED || line_iterator->operands.front().type == IMMED_SYM_VALUE) return false;
+		if (line_iterator->operands.front().is_byte && line_iterator->operands.back().is_word ) return false;
+		return true;
+	}
+	else
+		return true;
 }
 std::string Assembler::one_operand_instruction_handler()
 {
 	Operand op = line_iterator->operands.front();
-	std::vector<std::string> bytes;
 	if (line_iterator->operands_byte)
 	{
 		int second_byte = 0;
@@ -622,13 +629,224 @@ std::string Assembler::one_operand_instruction_handler()
 				reltab.insert(current_section, shtab.find_sh_node(current_section)->size + 1, REL_16, op.symbol);
 				return byte_to_hex(second_byte) + offset_bytes.substr(offset_bytes.size() - 2) + offset_bytes.substr(0, 2);
 		case PCREL:
-				
+			second_byte = (second_byte | REGIND_DISP_16_MASK) << 5;
+			second_byte = second_byte | (PC << 1);
+			if (symtab.find_symbol(op.symbol)->section == current_section)
+			{
+				int offset = LC - symtab.find_symbol(op.symbol)->value;
+				third_byte = offset;
+				if (offset >= INT8_MIN && offset <= INT8_MAX)
+				{
+					second_byte = (second_byte | REGIND_DISP_8_MASK) << 5;
+					return byte_to_hex(second_byte) + byte_to_hex(third_byte);
+				}
+				else
+				{
+					offset_bytes = word_to_hex(third_byte);
+					return byte_to_hex(second_byte) + offset_bytes.substr(offset_bytes.size() - 2) + offset_bytes.substr(0, 2);
+				}
+			}
+			else
+			{
+				reltab.insert(current_section, shtab.find_sh_node(current_section)->size + 1, REL_PC_16, op.symbol);
+				return byte_to_hex(second_byte) + word_to_hex(0);
+			}
 		case ABS:
-			break;
+			second_byte = (second_byte | MEMDIR_MASK) << 5;
+			reltab.insert(current_section, shtab.find_sh_node(current_section)->size + 1, REL_16, op.symbol);
+			return byte_to_hex(second_byte) + word_to_hex(symtab.find_symbol(op.symbol)->value);
 		case MEMDIR:
-			break;
+			second_byte = (second_byte | MEMDIR_MASK) << 5;
+			offset_bytes = word_to_hex(op.literal);
+			return byte_to_hex(second_byte) + offset_bytes.substr(offset_bytes.size() - 2) + offset_bytes.substr(0, 2);
 		}
 	}
+	else
+		if (line_iterator->operands_word)
+		{
+			int second_byte = 0;
+			int third_byte = 0;
+			int fourth_byte = 0;
+			std::string offset_bytes;
+			std::string temp;
+			switch (op.type)
+			{
+				case IMMED:
+					second_byte = (second_byte | IMMED_MASK) << 5;
+					third_byte = op.literal;
+					temp = word_to_hex(op.literal);
+					return byte_to_hex(second_byte) + temp.substr(temp.size() - 2) + temp.substr(0, 2);
+				case IMMED_SYM_VALUE:
+					second_byte = (second_byte | IMMED_MASK) << 5;
+					third_byte = op.literal;
+					temp = word_to_hex(symtab.find_symbol(op.symbol)->value);
+					reltab.insert(current_section, shtab.find_sh_node(current_section)->size + 1, REL_16, op.symbol);
+					return byte_to_hex(second_byte) + temp.substr(offset_bytes.size() - 2) + temp.substr(0, 2);
+				case REGDIR:
+					if (op.reg.low || op.reg.high) Error::wrong_literal_width(line_iterator->src_line);
+					second_byte = (second_byte | REGDIR_MASK) << 5;
+					second_byte = second_byte | (op.reg.number << 1);
+					return  byte_to_hex(second_byte);
+				case REGINDDISP_IMMED:
+					if (op.literal == 0)
+					{
+						second_byte = (second_byte | REGIND_MASK) << 5;
+						second_byte = second_byte | (op.reg.number << 1);
+						return byte_to_hex(second_byte);
+					}
+					else
+						if (op.is_byte)
+						{
+							second_byte = (second_byte | REGIND_DISP_8_MASK) << 5;
+							second_byte = second_byte | (op.reg.number << 1);
+							third_byte = op.literal;
+							return byte_to_hex(second_byte) + byte_to_hex(third_byte);
+						}
+						else
+						{
+							second_byte = (second_byte | REGIND_DISP_16_MASK) << 5;
+							second_byte = second_byte | (op.reg.number << 1);
+							third_byte = op.literal;
+							std::string offset_bytes = word_to_hex(third_byte);
+							return byte_to_hex(second_byte) + offset_bytes.substr(offset_bytes.size() - 2) + offset_bytes.substr(0, 2);
+						}
+				case REGINDDISP_SYM_VALUE:
+					second_byte = (second_byte | REGIND_DISP_16_MASK) << 5;
+					second_byte = second_byte | (op.reg.number << 1);
+					third_byte = symtab.find_symbol(op.symbol)->value;
+					offset_bytes = word_to_hex(third_byte);
+					reltab.insert(current_section, shtab.find_sh_node(current_section)->size + 1, REL_16, op.symbol);
+					return byte_to_hex(second_byte) + offset_bytes.substr(offset_bytes.size() - 2) + offset_bytes.substr(0, 2);
+				case PCREL:
+					second_byte = (second_byte | REGIND_DISP_16_MASK) << 5;
+					second_byte = second_byte | (PC << 1);
+					if (symtab.find_symbol(op.symbol)->section == current_section)
+					{
+						int offset = LC - symtab.find_symbol(op.symbol)->value;
+						third_byte = offset;
+						if (offset >= INT8_MIN && offset <= INT8_MAX)
+						{
+							second_byte = (second_byte | REGIND_DISP_8_MASK) << 5;
+							return byte_to_hex(second_byte) + byte_to_hex(third_byte);
+						}
+						else
+						{
+							offset_bytes = word_to_hex(third_byte);
+							return byte_to_hex(second_byte) + offset_bytes.substr(offset_bytes.size() - 2) + offset_bytes.substr(0, 2);
+						}
+					}
+					else
+					{
+						reltab.insert(current_section, shtab.find_sh_node(current_section)->size + 1, REL_PC_16, op.symbol);
+						return byte_to_hex(second_byte) + word_to_hex(0);
+					}
+				case ABS:
+					second_byte = (second_byte | MEMDIR_MASK) << 5;
+					reltab.insert(current_section, shtab.find_sh_node(current_section)->size + 1, REL_16, op.symbol);
+					return byte_to_hex(second_byte) + word_to_hex(symtab.find_symbol(op.symbol)->value);
+				case MEMDIR:
+					second_byte = (second_byte | MEMDIR_MASK) << 5;
+					offset_bytes = word_to_hex(op.literal);
+					return byte_to_hex(second_byte) + offset_bytes.substr(offset_bytes.size() - 2) + offset_bytes.substr(0, 2);
+			}
+		}
+		else
+		{
+			if (check_operands())
+			{
+				int second_byte = 0;
+				int third_byte = 0;
+				int fourth_byte = 0;
+				std::string offset_bytes;
+				std::string temp;
+				switch (op.type)
+				{
+				case IMMED:
+					second_byte = (second_byte | IMMED_MASK) << 5;
+					third_byte = op.literal;
+					if (op.is_byte)
+					{
+						return byte_to_hex(second_byte) + byte_to_hex(op.literal);
+					}
+					temp = word_to_hex(op.literal);
+					return byte_to_hex(second_byte) + temp.substr(temp.size() - 2) + temp.substr(0, 2);
+				case IMMED_SYM_VALUE:
+					second_byte = (second_byte | IMMED_MASK) << 5;
+					third_byte = op.literal;
+					temp = word_to_hex(symtab.find_symbol(op.symbol)->value);
+					reltab.insert(current_section, shtab.find_sh_node(current_section)->size + 1, REL_16, op.symbol);
+					return byte_to_hex(second_byte) + temp.substr(offset_bytes.size() - 2) + temp.substr(0, 2);
+				case REGDIR:
+					if (op.reg.low || op.reg.high) Error::wrong_literal_width(line_iterator->src_line);
+					second_byte = (second_byte | REGDIR_MASK) << 5;
+					second_byte = second_byte | (op.reg.number << 1);
+					return  byte_to_hex(second_byte);
+				case REGINDDISP_IMMED:
+					if (op.literal == 0)
+					{
+						second_byte = (second_byte | REGIND_MASK) << 5;
+						second_byte = second_byte | (op.reg.number << 1);
+						return byte_to_hex(second_byte);
+					}
+					else
+						if (op.is_byte)
+						{
+							second_byte = (second_byte | REGIND_DISP_8_MASK) << 5;
+							second_byte = second_byte | (op.reg.number << 1);
+							third_byte = op.literal;
+							return byte_to_hex(second_byte) + byte_to_hex(third_byte);
+						}
+						else
+						{
+							second_byte = (second_byte | REGIND_DISP_16_MASK) << 5;
+							second_byte = second_byte | (op.reg.number << 1);
+							third_byte = op.literal;
+							std::string offset_bytes = word_to_hex(third_byte);
+							return byte_to_hex(second_byte) + offset_bytes.substr(offset_bytes.size() - 2) + offset_bytes.substr(0, 2);
+						}
+				case REGINDDISP_SYM_VALUE:
+					second_byte = (second_byte | REGIND_DISP_16_MASK) << 5;
+					second_byte = second_byte | (op.reg.number << 1);
+					third_byte = symtab.find_symbol(op.symbol)->value;
+					offset_bytes = word_to_hex(third_byte);
+					reltab.insert(current_section, shtab.find_sh_node(current_section)->size + 1, REL_16, op.symbol);
+					return byte_to_hex(second_byte) + offset_bytes.substr(offset_bytes.size() - 2) + offset_bytes.substr(0, 2);
+				case PCREL:
+					second_byte = (second_byte | REGIND_DISP_16_MASK) << 5;
+					second_byte = second_byte | (PC << 1);
+					if (symtab.find_symbol(op.symbol)->section == current_section)
+					{
+						int offset = LC - symtab.find_symbol(op.symbol)->value;
+						third_byte = offset;
+						if (offset >= INT8_MIN && offset <= INT8_MAX)
+						{
+							second_byte = (second_byte | REGIND_DISP_8_MASK) << 5;
+							return byte_to_hex(second_byte) + byte_to_hex(third_byte);
+						}
+						else
+						{
+							offset_bytes = word_to_hex(third_byte);
+							return byte_to_hex(second_byte) + offset_bytes.substr(offset_bytes.size() - 2) + offset_bytes.substr(0, 2);
+						}
+					}
+					else
+					{
+						reltab.insert(current_section, shtab.find_sh_node(current_section)->size + 1, REL_PC_16, op.symbol);
+						return byte_to_hex(second_byte) + word_to_hex(0);
+					}
+				case ABS:
+					second_byte = (second_byte | MEMDIR_MASK) << 5;
+					reltab.insert(current_section, shtab.find_sh_node(current_section)->size + 1, REL_16, op.symbol);
+					return byte_to_hex(second_byte) + word_to_hex(symtab.find_symbol(op.symbol)->value);
+				case MEMDIR:
+					second_byte = (second_byte | MEMDIR_MASK) << 5;
+					offset_bytes = word_to_hex(op.literal);
+					return byte_to_hex(second_byte) + offset_bytes.substr(offset_bytes.size() - 2) + offset_bytes.substr(0, 2);
+				}
+			}
+			else
+				Error::operands_error(line_iterator->src_line);
+		}
 }
 std::string Assembler::two_operands_instruction_handler()
 {

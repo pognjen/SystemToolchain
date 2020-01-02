@@ -164,7 +164,12 @@ public:
 	}
 	static void wrong_operands_size(int line_number)
 	{
-		std::cout << "Error: wrong siye of operands on line " << line_number<< "\n";
+		std::cout << "Error: wrong size of operands on line " << line_number<< "\n";
+		exit(-1);
+	}
+	static void operands_error(int line_number)
+	{
+		std::cout << "Error: operands error on line " << line_number << "\n";
 		exit(-1);
 	}
 };
