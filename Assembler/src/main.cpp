@@ -21,28 +21,28 @@ int main(int argc, char* argv[])
     std::list<Token> token_list = lexer.get_token_list();
 
     std::list<Token>::iterator it;
-    //for (it = token_list.begin(); it != token_list.end(); it++)
+    // for (it = token_list.begin(); it != token_list.end(); it++)
     {
-       // std::cout << it->token_string << " : " << it->type << '\n';
+        // std::cout << it->token_string << " : " << it->type << '\n';
     }
 
     // parse token list
-     Parser parser(token_list);
-	 std::list<Line> line_list = parser.parse_token_list();
-	 /*for (auto& it: line_list)
-	 {
-		 std::cout<<it<<'\n';
-	 }*/
-	 /*std::stringstream ss;
-	 ss << std::hex << (((uint8_t)26) << 3); // int decimal_value
-	 std::string res(ss.str());
-	 std::cout << res;
-	 */
-	 //std::string temp = std::to_string();
+    Parser parser(token_list);
+    std::list<Line> line_list = parser.parse_token_list();
+    /*for (auto& it: line_list)
+    {
+            std::cout<<it<<'\n';
+    }*/
+    /*std::stringstream ss;
+    ss << std::hex << (((uint8_t)26) << 3); // int decimal_value
+    std::string res(ss.str());
+    std::cout << res;
+    */
+    // std::string temp = std::to_string();
 
-	 //for (int i=0;i<temp.size();i++) std::cout << temp[i];
-	 Assembler assembler(line_list);
-	 //std::cout<< assembler.byte_to_hex(26 << 3);
-	 std::string text_section = assembler.assemble_line_list();
-	 std::cout << text_section << '\n';
+    // for (int i=0;i<temp.size();i++) std::cout << temp[i];
+    Assembler assembler(line_list);
+    // std::cout<< assembler.byte_to_hex(26 << 3);
+    std::string text_section = assembler.assemble_line_list();
+    std::cout << text_section << '\n';
 }
