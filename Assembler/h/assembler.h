@@ -185,7 +185,7 @@ private:
 	void fp_end_handler();
 	void do_nothing(){}
 	bool check_operands();
-	std::string one_operand_instruction_handler();
+	std::string one_operand_instruction_handler(bool,bool,bool,bool);
 	std::string two_operands_instruction_handler();
 	unsigned int LC;
 	std::string current_section;

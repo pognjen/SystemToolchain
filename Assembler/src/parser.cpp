@@ -304,9 +304,21 @@ void Parser::read_command()
         line_pointer->is_directive = false;
 
         line_pointer->instruction = token_iterator->token_string;
-		if (token_iterator->type == "INSTRUCTIONB") line_pointer->operands_byte = true,line_pointer->operands_word = false;
+		if (token_iterator->type == "INSTRUCTIONB")
+		{
+			line_pointer->operands_byte = true;
+			line_pointer->operands_word = false;
+			line_pointer->instruction = token_iterator->token_string.substr(0, token_iterator->token_string.size() - 1);
+		}
 		else
-			if (token_iterator->type == "INSTRUCTIONW") line_pointer->operands_word = true, line_pointer->operands_byte = false;
+			if (token_iterator->type == "INSTRUCTIONW")
+			{
+				{
+					line_pointer->operands_byte = false;
+					line_pointer->operands_word = true;
+					line_pointer->instruction = token_iterator->token_string.substr(0, token_iterator->token_string.size() - 1);
+				}
+			}
 			else
 				line_pointer->operands_word = true, line_pointer->operands_byte = false;
         token_iterator++;

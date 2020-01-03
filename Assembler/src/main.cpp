@@ -44,5 +44,5 @@ int main(int argc, char* argv[])
 	 Assembler assembler(line_list);
 	 //std::cout<< assembler.byte_to_hex(26 << 3);
 	 std::string text_section = assembler.assemble_line_list();
-	 //std::cout << text_section << '\n';
+	 std::cout << text_section << '\n';
 }

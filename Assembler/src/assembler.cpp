@@ -574,9 +574,12 @@ bool Assembler::check_operands()
 	else
 		return true;
 }
-std::string Assembler::one_operand_instruction_handler()
+std::string Assembler::one_operand_instruction_handler(bool first_operand,bool first_operand_byte,bool first_operand_word,bool front)
 {
-	Operand op = line_iterator->operands.front();
+	Operand op;
+	if (front) op = line_iterator->operands.front();
+	else
+		op = line_iterator->operands.back();
 	if (line_iterator->operands_byte)
 	{
 		int second_byte = 0;
@@ -766,10 +769,18 @@ std::string Assembler::one_operand_instruction_handler()
 					third_byte = op.literal;
 					if (op.is_byte)
 					{
-						return byte_to_hex(second_byte) + byte_to_hex(op.literal);
+						if (first_operand || first_operand_byte) return byte_to_hex(second_byte) + byte_to_hex(op.literal);
+						else
+							if (first_operand_word)
+							{
+								temp = word_to_hex(op.literal);
+								return byte_to_hex(second_byte) + temp.substr(temp.size() - 2) + temp.substr(0, 2);
+							}
 					}
 					temp = word_to_hex(op.literal);
-					return byte_to_hex(second_byte) + temp.substr(temp.size() - 2) + temp.substr(0, 2);
+					if (first_operand || first_operand_word) return byte_to_hex(second_byte) + temp.substr(temp.size() - 2) + temp.substr(0, 2);
+					else
+						if (first_operand_byte) Error::operands_error(line_iterator->src_line);
 				case IMMED_SYM_VALUE:
 					second_byte = (second_byte | IMMED_MASK) << 5;
 					third_byte = op.literal;
@@ -777,9 +788,10 @@ std::string Assembler::one_operand_instruction_handler()
 					reltab.insert(current_section, shtab.find_sh_node(current_section)->size + 1, REL_16, op.symbol);
 					return byte_to_hex(second_byte) + temp.substr(offset_bytes.size() - 2) + temp.substr(0, 2);
 				case REGDIR:
-					if (op.reg.low || op.reg.high) Error::wrong_literal_width(line_iterator->src_line);
+					//if (op.reg.low || op.reg.high) Error::wrong_literal_width(line_iterator->src_line);
 					second_byte = (second_byte | REGDIR_MASK) << 5;
 					second_byte = second_byte | (op.reg.number << 1);
+					if (first_operand_byte && !first_operand && !op.reg.low && !op.reg.high) Error::wrong_operands_size(line_iterator->src_line);
 					return  byte_to_hex(second_byte);
 				case REGINDDISP_IMMED:
 					if (op.literal == 0)
@@ -850,7 +862,9 @@ std::string Assembler::one_operand_instruction_handler()
 }
 std::string Assembler::two_operands_instruction_handler()
 {
-
+	bool is_byte = line_iterator->operands.front().is_byte;
+	return one_operand_instruction_handler(true, false, false, true) +
+		one_operand_instruction_handler(false, is_byte, !is_byte, false);
 }
 void Assembler::sp_instruction_handler()
 {
@@ -866,7 +880,7 @@ void Assembler::sp_instruction_handler()
 
 			switch (line_iterator->operands.size())
 			{
-				case 1:one_operand_instruction_handler(); break;
+				case 1:one_operand_instruction_handler(true,false,false,true); break;
 				case 2:two_operands_instruction_handler(); break;
 			}
 		}
@@ -889,6 +903,11 @@ void Assembler::second_pass()
 		{
 			(this->*(sp_map[line_iterator->directive]))();
 		}
+		else
+			if (line_iterator->is_instruction)
+			{
+				sp_instruction_handler();
+			}
 		if (line_iterator->directive == ".end") break;
 		line_iterator++;
 	}
@@ -902,8 +921,13 @@ std::string Assembler::assemble_line_list()
 	std::cout << shtab;*/
 
 	second_pass();
-	std::cout << reltab;
-	return data_section;
+	//std::cout << reltab;
+	std::string ret = text_section + data_section;
+	for (auto& it : custom_sections)
+	{
+		ret += it.second;
+	}
+	return ret;
 }
 
 Assembler::Assembler(std::list<Line> line_list)
