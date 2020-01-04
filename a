@@ -1,0 +1,173 @@
+[33mcommit e8c7917e65b92df75698b36468b1747dbe6fd858[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m, [m[1;31mmain/master[m[33m)[m
+Author: Ognjen <ognjen845@gmail.com>
+Date:   Fri Jan 3 18:27:18 2020 +0100
+
+    Assembler finished : formatted
+
+[33mcommit bdde3311b9535200b6523b66c2178a63957e4770[m
+Author: Ognjen <ognjen845@gmail.com>
+Date:   Fri Jan 3 18:23:15 2020 +0100
+
+    Assembler finished with few bugs
+
+[33mcommit b3f9e61206d10b3c99a1d94230dc7c40bb18e632[m
+Author: Ognjen <ognjen845@gmail.com>
+Date:   Thu Jan 2 14:11:45 2020 +0100
+
+    second pass finished, untested
+
+[33mcommit 23ad4e6daac1b309887b9c2e4fc0039c2ea89b44[m
+Author: Ognjen <ognjen845@gmail.com>
+Date:   Wed Jan 1 17:37:37 2020 +0100
+
+    second pass instr handlers
+
+[33mcommit 31c96862b43ae27979e2ada3cf19105359c4f3ee[m
+Author: Ognjen <ognjen845@gmail.com>
+Date:   Tue Dec 31 16:44:28 2019 +0100
+
+    Second pass - directive handlers
+
+[33mcommit ec2722ad594c130d506daf8537cbcf16161a00a1[m
+Author: Ognjen <ognjen845@gmail.com>
+Date:   Mon Dec 30 17:07:47 2019 +0100
+
+    second pass directives finished
+
+[33mcommit 68fd03716084e6ece26e889d7e1c34b20a05185b[m
+Author: Ognjen <ognjen845@gmail.com>
+Date:   Sun Dec 29 19:59:26 2019 +0100
+
+    second pass started
+
+[33mcommit 1b9541906b6d5327a9813afbefccca83b8fdc610[m
+Author: Ognjen <ognjen845@gmail.com>
+Date:   Fri Dec 27 17:29:39 2019 +0100
+
+    bugs fixed in lexer
+
+[33mcommit 05dd0243914397ab6af0530a379c2315cc711838[m
+Author: Ognjen <ognjen845@gmail.com>
+Date:   Mon Dec 16 15:12:03 2019 +0100
+
+    tested so far
+
+[33mcommit 3e547670640dd93da9d72f3f1d6043e3e655054c[m
+Author: Ognjen <ognjen845@gmail.com>
+Date:   Mon Dec 16 14:25:15 2019 +0100
+
+    minor bugs fixes
+
+[33mcommit 1d2ffa7d7913c75f2d9bc97b6554f3372ae361dc[m
+Author: Ognjen <ognjen845@gmail.com>
+Date:   Sat Dec 14 16:54:04 2019 +0100
+
+    first pass finished
+
+[33mcommit 1f2e875b3e6bf7b5e1e1c36a504193c5b883ce2d[m
+Author: Ognjen <ognjen845@gmail.com>
+Date:   Sat Dec 14 15:19:16 2019 +0100
+
+    first pass - errors fixed
+
+[33mcommit ce5dc4ac7c2cc914a6a0151e8fc3cbf14ea1859d[m
+Author: Ognjen <ognjen845@gmail.com>
+Date:   Fri Dec 13 13:57:56 2019 +0100
+
+    first pass progress
+
+[33mcommit 8b806f78cc8613c332e9366b0e6d5379da481041[m
+Author: Ognjen <ognjen845@gmail.com>
+Date:   Wed Dec 11 18:11:14 2019 +0100
+
+    first pass started
+
+[33mcommit 65b07d426a8a38a5404741c5f3262bd17f7302cd[m
+Author: Ognjen <ognjen845@gmail.com>
+Date:   Wed Dec 11 13:31:05 2019 +0100
+
+    Parser finished and tested
+
+[33mcommit 2ef8752fe3927e976b715d60ed843325e02cd8d2[m
+Author: Ognjen <ognjen845@gmail.com>
+Date:   Tue Dec 10 20:35:34 2019 +0100
+
+    Errors in parser fixed and formatted
+
+[33mcommit 70e7ee1fe7cb59fb6c96a0d37de842ea6ccccd16[m
+Author: Ognjen <ognjen845@gmail.com>
+Date:   Tue Dec 10 18:56:30 2019 +0100
+
+    Parser finished
+
+[33mcommit 0e53d6d5498bde9e74989419533d715674214b00[m
+Author: Ognjen <ognjen845@gmail.com>
+Date:   Mon Dec 9 17:46:46 2019 +0100
+
+    Formatted
+
+[33mcommit fbb595c53232d85b5b53b73976802794257f12c9[m
+Author: Ognjen <ognjen845@gmail.com>
+Date:   Mon Dec 9 17:11:28 2019 +0100
+
+    Parser errors fixed
+
+[33mcommit 689809f445e1aac670db44fce9dfa27c1dd37e85[m
+Author: Ognjen <ognjen845@gmail.com>
+Date:   Mon Dec 9 17:03:09 2019 +0100
+
+    Parser finished;untested
+
+[33mcommit 3047f4ac9bfbcad08690daf479b95b0855533889[m
+Author: Ognjen <ognjen845@gmail.com>
+Date:   Sun Dec 8 18:28:45 2019 +0100
+
+    Parser started
+
+[33mcommit c10d6530c57b1da36e2ff8a9ee041359b8409c94[m
+Author: Ognjen <ognjen845@gmail.com>
+Date:   Sun Dec 8 16:18:12 2019 +0100
+
+    Hexadecimal numbers as literals
+
+[33mcommit 16535c77dc6f1f44a875a32f88cbe50275753570[m
+Author: Ognjen <ognjen845@gmail.com>
+Date:   Sun Dec 8 15:58:02 2019 +0100
+
+    Instructions.txt updated
+
+[33mcommit a42f3cfbd21d2d4084fb15098a9cefe3d69849f5[m
+Author: Ognjen <ognjen845@gmail.com>
+Date:   Sun Dec 8 15:53:45 2019 +0100
+
+    Lexer finished
+
+[33mcommit 3223e2565df5827a2500b524cee0924ca3f4c3c6[m
+Author: Ognjen <ognjen845@gmail.com>
+Date:   Sat Dec 7 17:03:52 2019 +0100
+
+    "Public to private in lexer class"
+
+[33mcommit 076323da8ad6d28d08bdef3380411a4c8fff9ebf[m
+Author: Ognjen <ognjen845@gmail.com>
+Date:   Sat Dec 7 17:02:59 2019 +0100
+
+    Instruction sufix fixed
+
+[33mcommit 399928ac818cc6940af5de9e46aeeca5e028a772[m
+Author: Ognjen <ognjen845@gmail.com>
+Date:   Sat Dec 7 16:55:26 2019 +0100
+
+    Lexer added
+
+[33mcommit dbc3f84e0bd8e9dba24ae51623325472533a9f46[m
+Author: Ognjen <ognjen845@gmail.com>
+Date:   Sat Dec 7 14:24:17 2019 +0100
+
+    "File reading"
+
+[33mcommit 5ef36e5d130a2656a408b1dbda712a9a46bc74ce[m
+Author: Ognjen <ognjen845@gmail.com>
+Date:   Sat Dec 7 13:04:13 2019 +0100
+
+    "Initial commit"

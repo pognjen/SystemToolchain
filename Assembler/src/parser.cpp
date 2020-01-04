@@ -135,7 +135,17 @@ void Parser::read_operand_list()
                 operand->is_word = true;
                 operand->is_byte = false;
                 operand->type = REGDIR;
-                operand->reg.number = token_iterator->token_string[1] - '0';
+				
+				if (token_iterator->token_string != "psw" && token_iterator->token_string != "sp" && token_iterator->token_string != "pc")
+				{
+					operand->reg.number = token_iterator->token_string[1] - '0';
+				}
+				else
+					if (token_iterator->token_string == "psw" || token_iterator->token_string == "PSW") operand->reg.number = 15;
+					else
+						if (token_iterator->token_string == "pc" || token_iterator->token_string == "PC") operand->reg.number = 7;
+						else
+							if (token_iterator->token_string == "sp" || token_iterator->token_string == "SP") operand->reg.number = 6;
 
                 if (token_iterator->token_string.size() == 3)
                 {
