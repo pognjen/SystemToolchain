@@ -414,18 +414,12 @@ void Assembler::sp_skip_handler()
 		{
 			if (current_section == ".text")
 			{
-				text_section += byte_to_hex(instructions_map["nop"] << 3);
+				sections[current_section] += byte_to_hex(instructions_map["nop"] << 3)+'\n';
 			}
 			else
-				if (current_section == ".data")
-				{
-					data_section += byte_to_hex(0);
-				}
-				else
-					if (current_section != ".bss")
-					{
-						custom_sections[current_section] += byte_to_hex(0);
-					}
+			{
+				sections[current_section] += byte_to_hex(0);
+			}
 			LC = LC + 1;
 			i--;
 		}
@@ -438,18 +432,12 @@ void Assembler::sp_align_handler()
 		{
 			if (current_section == ".text")
 			{
-				text_section += byte_to_hex(instructions_map["nop"] << 3);
+				sections[current_section] += byte_to_hex(instructions_map["nop"] << 3)+'\n';
 			}
 			else
-				if (current_section == ".data")
-				{
-					data_section += byte_to_hex(0);
-				}
-				else
-					if (current_section != ".bss")
-					{
-						custom_sections[current_section] += byte_to_hex(0);
-					}
+			{
+				sections[current_section] += byte_to_hex(0);
+			}
 			LC = LC + 1;
 		}
 }
@@ -466,17 +454,10 @@ void Assembler::sp_word_handler()
 			else
 				if (it.type == IMMED)
 				{
-						std::string temp = word_to_hex(it.literal);
-						if (current_section == ".data")
-						{
-							data_section += temp.substr(temp.size() - 2); //lower byte
-							data_section += temp.substr(0, 2); //higher byte
-						}
-						else
-						{
-							custom_sections[current_section] += temp.substr(temp.size() - 2);
-							custom_sections[current_section] += temp.substr(0, 2);
-						}
+					std::string temp = word_to_hex(it.literal);
+					sections[current_section] += temp.substr(temp.size() - 2);
+					sections[current_section] += temp.substr(0, 2);
+						
 				}
 				else
 					{
@@ -484,20 +465,20 @@ void Assembler::sp_word_handler()
 						std::string temp = word_to_hex(temp_ptr->value);
 						if (current_section == ".data")
 						{
-							data_section += temp.substr(temp.size() - 2); //lower byte
-							data_section += temp.substr(0, 2); //higher byte
+							sections[current_section] += temp.substr(temp.size() - 2); //lower byte
+							sections[current_section] += temp.substr(0, 2); //higher byte
 							if (temp_ptr->section != "ABS")
 							{
-								reltab.insert(current_section, data_section.size() - 4, REL_16, it.symbol);
+								reltab.insert(current_section, sections[current_section].size()/2-2, REL_16, it.symbol);
 							}
 						}
 						else
 						{
-							custom_sections[current_section] += temp.substr(temp.size() - 2);
-							custom_sections[current_section] += temp.substr(0, 2);
+							sections[current_section]+= temp.substr(temp.size() - 2);
+							sections[current_section]+= temp.substr(0, 2);
 							if (temp_ptr->section != "ABS")
 							{
-								reltab.insert(current_section, custom_sections[current_section].size() - 4, REL_16, it.symbol);
+								reltab.insert(current_section, sections[current_section].size() / 2 -2, REL_16, it.symbol);
 							}
 						}
 					
@@ -525,13 +506,13 @@ void Assembler::sp_byte_handler()
 					{
 						if (!temp_ptr || temp_ptr->section != "ABS")
 						{
-							data_section += byte_to_hex(it.literal);
+							sections[current_section] += byte_to_hex(it.literal);
 						}
 						else
 						{
 							if (temp_ptr->value >= INT8_MIN && temp_ptr->value <= INT8_MAX)
 							{
-								data_section += byte_to_hex(temp_ptr->value);
+								sections[current_section] += byte_to_hex(temp_ptr->value);
 							}
 							else
 								Error::wrong_literal_width(line_iterator->src_line);
@@ -541,13 +522,13 @@ void Assembler::sp_byte_handler()
 					{
 						if (temp_ptr->section != "ABS")
 						{
-							custom_sections[current_section] += byte_to_hex(it.literal);
+							sections[current_section] += byte_to_hex(it.literal);
 						}
 						else
 						{
 							if (temp_ptr->value >= INT8_MIN && temp_ptr->value <= INT8_MAX)
 							{
-								custom_sections[current_section] += byte_to_hex(temp_ptr->value);
+								sections[current_section] += byte_to_hex(temp_ptr->value);
 							}
 							else
 								Error::wrong_literal_width(line_iterator->src_line);
@@ -603,7 +584,7 @@ bool Assembler::is_jump_instruction()
 	else
 		return false;
 }
-std::string Assembler::one_operand_instruction_handler(bool first_operand,bool first_operand_byte,bool first_operand_word,bool front)
+void Assembler::one_operand_instruction_handler(bool first_operand,bool first_operand_byte,bool first_operand_word,bool front)
 {
 	Operand op;
 	if (!is_jump_instruction() && line_iterator->instruction != "call")
@@ -629,21 +610,24 @@ std::string Assembler::one_operand_instruction_handler(bool first_operand,bool f
 			if (op.is_word) Error::wrong_literal_width(line_iterator->src_line);
 			second_byte = (second_byte | IMMED_MASK) << 5;
 			third_byte = op.literal;
-			return byte_to_hex(second_byte) + byte_to_hex(third_byte);
+			sections[current_section] += byte_to_hex(second_byte) + byte_to_hex(third_byte);
+			break;
 		case IMMED_SYM_VALUE:
 			Error::wrong_literal_width(line_iterator->src_line);
+			break;
 		case REGDIR:
 			if (!op.reg.low && !op.reg.high || op.reg.number == 15) Error::wrong_literal_width(line_iterator->src_line);
 			second_byte = (second_byte | REGDIR_MASK) << 5;
 			second_byte = second_byte | (op.reg.number << 1);
 			if (op.reg.high) second_byte |= 1;
-			return  byte_to_hex(second_byte);
+			sections[current_section] += byte_to_hex(second_byte);
+			break;
 		case REGINDDISP_IMMED:
 			if (op.literal == 0)
 			{
 				second_byte = (second_byte | REGIND_MASK) << 5;
 				second_byte = second_byte | (op.reg.number << 1);
-				return byte_to_hex(second_byte);
+				sections[current_section] += byte_to_hex(second_byte);
 			}
 			else
 				if (op.is_byte)
@@ -651,7 +635,7 @@ std::string Assembler::one_operand_instruction_handler(bool first_operand,bool f
 					second_byte = (second_byte | REGIND_DISP_8_MASK) << 5;
 					second_byte = second_byte | (op.reg.number << 1);
 					third_byte = op.literal;
-					return byte_to_hex(second_byte) + byte_to_hex(third_byte);
+					sections[current_section] += byte_to_hex(second_byte) + byte_to_hex(third_byte);
 				}
 				else
 				{
@@ -659,15 +643,17 @@ std::string Assembler::one_operand_instruction_handler(bool first_operand,bool f
 					second_byte = second_byte | (op.reg.number << 1);
 					third_byte = op.literal;
 					std::string offset_bytes = word_to_hex(third_byte);
-					return byte_to_hex(second_byte) + offset_bytes.substr(offset_bytes.size()-2) + offset_bytes.substr(0,2);
+					sections[current_section] += byte_to_hex(second_byte) + offset_bytes.substr(offset_bytes.size()-2) + offset_bytes.substr(0,2);
 				}
+			break;
 		case REGINDDISP_SYM_VALUE:
 				second_byte = (second_byte | REGIND_DISP_16_MASK) << 5;
 				second_byte = second_byte | (op.reg.number << 1);
 				third_byte = symtab.find_symbol(op.symbol)->value;
 				offset_bytes = word_to_hex(third_byte);
-				reltab.insert(current_section, shtab.find_sh_node(current_section)->size + 1, REL_16, op.symbol);
-				return byte_to_hex(second_byte) + offset_bytes.substr(offset_bytes.size() - 2) + offset_bytes.substr(0, 2);
+				sections[current_section] += byte_to_hex(second_byte) + offset_bytes.substr(offset_bytes.size() - 2) + offset_bytes.substr(0, 2);
+				reltab.insert(current_section, sections[current_section].size()/2 - 2, REL_16, op.symbol);
+				break;
 		case PCREL:
 			second_byte = (second_byte | REGIND_DISP_16_MASK) << 5;
 			second_byte = second_byte | (PC << 1);
@@ -678,27 +664,30 @@ std::string Assembler::one_operand_instruction_handler(bool first_operand,bool f
 				if (offset >= INT8_MIN && offset <= INT8_MAX)
 				{
 					second_byte = (second_byte | REGIND_DISP_8_MASK) << 5;
-					return byte_to_hex(second_byte) + byte_to_hex(third_byte);
+					sections[current_section] += byte_to_hex(second_byte) + byte_to_hex(third_byte);
 				}
 				else
 				{
 					offset_bytes = word_to_hex(third_byte);
-					return byte_to_hex(second_byte) + offset_bytes.substr(offset_bytes.size() - 2) + offset_bytes.substr(0, 2);
+					sections[current_section] += byte_to_hex(second_byte) + offset_bytes.substr(offset_bytes.size() - 2) + offset_bytes.substr(0, 2);
 				}
 			}
 			else
 			{
-				reltab.insert(current_section, shtab.find_sh_node(current_section)->size + 1, REL_PC_16, op.symbol);
-				return byte_to_hex(second_byte) + word_to_hex(0);
+				sections[current_section] += byte_to_hex(second_byte) + word_to_hex(0);
+				reltab.insert(current_section, sections[current_section].size()/2 - 2, REL_PC_16, op.symbol);
 			}
+			break;
 		case ABS:
 			second_byte = (second_byte | MEMDIR_MASK) << 5;
-			reltab.insert(current_section, shtab.find_sh_node(current_section)->size + 1, REL_16, op.symbol);
-			return byte_to_hex(second_byte) + word_to_hex(symtab.find_symbol(op.symbol)->value);
+			sections[current_section] += byte_to_hex(second_byte) + word_to_hex(symtab.find_symbol(op.symbol)->value);
+			reltab.insert(current_section, sections[current_section].size()/2 - 2, REL_16, op.symbol);
+			break;
 		case MEMDIR:
 			second_byte = (second_byte | MEMDIR_MASK) << 5;
 			offset_bytes = word_to_hex(op.literal);
-			return byte_to_hex(second_byte) + offset_bytes.substr(offset_bytes.size() - 2) + offset_bytes.substr(0, 2);
+			sections[current_section] += byte_to_hex(second_byte) + offset_bytes.substr(offset_bytes.size() - 2) + offset_bytes.substr(0, 2);
+			break;
 		}
 	}
 	else
@@ -715,24 +704,27 @@ std::string Assembler::one_operand_instruction_handler(bool first_operand,bool f
 					second_byte = (second_byte | IMMED_MASK) << 5;
 					third_byte = op.literal;
 					temp = word_to_hex(op.literal);
-					return byte_to_hex(second_byte) + temp.substr(temp.size() - 2) + temp.substr(0, 2);
+					sections[current_section] += byte_to_hex(second_byte) + temp.substr(temp.size() - 2) + temp.substr(0, 2);
+					break;
 				case IMMED_SYM_VALUE:
 					second_byte = (second_byte | IMMED_MASK) << 5;
 					third_byte = op.literal;
 					temp = word_to_hex(symtab.find_symbol(op.symbol)->value);
-					reltab.insert(current_section, shtab.find_sh_node(current_section)->size + 1, REL_16, op.symbol);
-					return byte_to_hex(second_byte) + temp.substr(offset_bytes.size() - 2) + temp.substr(0, 2);
+					sections[current_section] += byte_to_hex(second_byte) + temp.substr(offset_bytes.size() - 2) + temp.substr(0, 2);
+					reltab.insert(current_section, sections[current_section].size()/2 - 2, REL_16, op.symbol);
+					break;
 				case REGDIR:
 					if (op.reg.low || op.reg.high) Error::wrong_literal_width(line_iterator->src_line);
 					second_byte = (second_byte | REGDIR_MASK) << 5;
 					second_byte = second_byte | (op.reg.number << 1);
-					return  byte_to_hex(second_byte);
+					sections[current_section] += byte_to_hex(second_byte);
+					break;
 				case REGINDDISP_IMMED:
 					if (op.literal == 0)
 					{
 						second_byte = (second_byte | REGIND_MASK) << 5;
 						second_byte = second_byte | (op.reg.number << 1);
-						return byte_to_hex(second_byte);
+						sections[current_section] += byte_to_hex(second_byte);
 					}
 					else
 						if (op.is_byte)
@@ -740,7 +732,7 @@ std::string Assembler::one_operand_instruction_handler(bool first_operand,bool f
 							second_byte = (second_byte | REGIND_DISP_8_MASK) << 5;
 							second_byte = second_byte | (op.reg.number << 1);
 							third_byte = op.literal;
-							return byte_to_hex(second_byte) + byte_to_hex(third_byte);
+							sections[current_section] += byte_to_hex(second_byte) + byte_to_hex(third_byte);
 						}
 						else
 						{
@@ -748,15 +740,17 @@ std::string Assembler::one_operand_instruction_handler(bool first_operand,bool f
 							second_byte = second_byte | (op.reg.number << 1);
 							third_byte = op.literal;
 							std::string offset_bytes = word_to_hex(third_byte);
-							return byte_to_hex(second_byte) + offset_bytes.substr(offset_bytes.size() - 2) + offset_bytes.substr(0, 2);
+							sections[current_section] += byte_to_hex(second_byte) + offset_bytes.substr(offset_bytes.size() - 2) + offset_bytes.substr(0, 2);
 						}
+					break;
 				case REGINDDISP_SYM_VALUE:
 					second_byte = (second_byte | REGIND_DISP_16_MASK) << 5;
 					second_byte = second_byte | (op.reg.number << 1);
 					third_byte = symtab.find_symbol(op.symbol)->value;
 					offset_bytes = word_to_hex(third_byte);
-					reltab.insert(current_section, shtab.find_sh_node(current_section)->size + 1, REL_16, op.symbol);
-					return byte_to_hex(second_byte) + offset_bytes.substr(offset_bytes.size() - 2) + offset_bytes.substr(0, 2);
+					sections[current_section] += byte_to_hex(second_byte) + offset_bytes.substr(offset_bytes.size() - 2) + offset_bytes.substr(0, 2);
+					reltab.insert(current_section, sections[current_section].size()/2 - 2, REL_16, op.symbol);
+					break;
 				case PCREL:
 					second_byte = (second_byte | REGIND_DISP_16_MASK) << 5;
 					second_byte = second_byte | (PC << 1);
@@ -767,27 +761,30 @@ std::string Assembler::one_operand_instruction_handler(bool first_operand,bool f
 						if (offset >= INT8_MIN && offset <= INT8_MAX)
 						{
 							second_byte = (second_byte | REGIND_DISP_8_MASK) << 5;
-							return byte_to_hex(second_byte) + byte_to_hex(third_byte);
+							sections[current_section] += byte_to_hex(second_byte) + byte_to_hex(third_byte);
 						}
 						else
 						{
 							offset_bytes = word_to_hex(third_byte);
-							return byte_to_hex(second_byte) + offset_bytes.substr(offset_bytes.size() - 2) + offset_bytes.substr(0, 2);
+							sections[current_section] += byte_to_hex(second_byte) + offset_bytes.substr(offset_bytes.size() - 2) + offset_bytes.substr(0, 2);
 						}
 					}
 					else
 					{
-						reltab.insert(current_section, shtab.find_sh_node(current_section)->size + 1, REL_PC_16, op.symbol);
-						return byte_to_hex(second_byte) + word_to_hex(0);
+						reltab.insert(current_section, sections[current_section].size()/2 - 2, REL_PC_16, op.symbol);
+						sections[current_section] += byte_to_hex(second_byte) + word_to_hex(0);
 					}
+					break;
 				case ABS:
 					second_byte = (second_byte | MEMDIR_MASK) << 5;
-					reltab.insert(current_section, shtab.find_sh_node(current_section)->size + 1, REL_16, op.symbol);
-					return byte_to_hex(second_byte) + word_to_hex(symtab.find_symbol(op.symbol)->value);
+					reltab.insert(current_section, sections[current_section].size() / 2 - 2, REL_16, op.symbol);
+					sections[current_section] += byte_to_hex(second_byte) + word_to_hex(symtab.find_symbol(op.symbol)->value);
+					break;
 				case MEMDIR:
 					second_byte = (second_byte | MEMDIR_MASK) << 5;
 					offset_bytes = word_to_hex(op.literal);
-					return byte_to_hex(second_byte) + offset_bytes.substr(offset_bytes.size() - 2) + offset_bytes.substr(0, 2);
+					sections[current_section] += byte_to_hex(second_byte) + offset_bytes.substr(offset_bytes.size() - 2) + offset_bytes.substr(0, 2);
+					break;
 			}
 		}
 		else
@@ -806,36 +803,39 @@ std::string Assembler::one_operand_instruction_handler(bool first_operand,bool f
 					third_byte = op.literal;
 					if (op.is_byte)
 					{
-						if (first_operand || first_operand_byte) return byte_to_hex(second_byte) + byte_to_hex(op.literal);
+						if (first_operand || first_operand_byte) sections[current_section] += byte_to_hex(second_byte) + byte_to_hex(op.literal);
 						else
 							if (first_operand_word)
 							{
 								temp = word_to_hex(op.literal);
-								return byte_to_hex(second_byte) + temp.substr(temp.size() - 2) + temp.substr(0, 2);
+								sections[current_section] += byte_to_hex(second_byte) + temp.substr(temp.size() - 2) + temp.substr(0, 2);
 							}
 					}
 					temp = word_to_hex(op.literal);
-					if (first_operand || first_operand_word) return byte_to_hex(second_byte) + temp.substr(temp.size() - 2) + temp.substr(0, 2);
+					if (first_operand || first_operand_word) sections[current_section] += byte_to_hex(second_byte) + temp.substr(temp.size() - 2) + temp.substr(0, 2);
 					else
 						if (first_operand_byte) Error::operands_error(line_iterator->src_line);
+					break;
 				case IMMED_SYM_VALUE:
 					second_byte = (second_byte | IMMED_MASK) << 5;
 					third_byte = op.literal;
 					temp = word_to_hex(symtab.find_symbol(op.symbol)->value);
-					reltab.insert(current_section, shtab.find_sh_node(current_section)->size + 1, REL_16, op.symbol);
-					return byte_to_hex(second_byte) + temp.substr(offset_bytes.size() - 2) + temp.substr(0, 2);
+					reltab.insert(current_section, sections[current_section].size()/2 - 2, REL_16, op.symbol);
+					sections[current_section] += byte_to_hex(second_byte) + temp.substr(offset_bytes.size() - 2) + temp.substr(0, 2);
+					break;
 				case REGDIR:
 					//if (op.reg.low || op.reg.high) Error::wrong_literal_width(line_iterator->src_line);
 					second_byte = (second_byte | REGDIR_MASK) << 5;
 					second_byte = second_byte | (op.reg.number << 1);
 					if (first_operand_byte && !first_operand && !op.reg.low && !op.reg.high) Error::wrong_operands_size(line_iterator->src_line);
-					return  byte_to_hex(second_byte);
+					sections[current_section] += byte_to_hex(second_byte);
+					break;
 				case REGINDDISP_IMMED:
 					if (op.literal == 0)
 					{
 						second_byte = (second_byte | REGIND_MASK) << 5;
 						second_byte = second_byte | (op.reg.number << 1);
-						return byte_to_hex(second_byte);
+						sections[current_section] += byte_to_hex(second_byte);
 					}
 					else
 						if (op.is_byte)
@@ -843,7 +843,7 @@ std::string Assembler::one_operand_instruction_handler(bool first_operand,bool f
 							second_byte = (second_byte | REGIND_DISP_8_MASK) << 5;
 							second_byte = second_byte | (op.reg.number << 1);
 							third_byte = op.literal;
-							return byte_to_hex(second_byte) + byte_to_hex(third_byte);
+							sections[current_section] += byte_to_hex(second_byte) + byte_to_hex(third_byte);
 						}
 						else
 						{
@@ -851,15 +851,17 @@ std::string Assembler::one_operand_instruction_handler(bool first_operand,bool f
 							second_byte = second_byte | (op.reg.number << 1);
 							third_byte = op.literal;
 							std::string offset_bytes = word_to_hex(third_byte);
-							return byte_to_hex(second_byte) + offset_bytes.substr(offset_bytes.size() - 2) + offset_bytes.substr(0, 2);
+							sections[current_section] += byte_to_hex(second_byte) + offset_bytes.substr(offset_bytes.size() - 2) + offset_bytes.substr(0, 2);
 						}
+					break;
 				case REGINDDISP_SYM_VALUE:
 					second_byte = (second_byte | REGIND_DISP_16_MASK) << 5;
 					second_byte = second_byte | (op.reg.number << 1);
 					third_byte = symtab.find_symbol(op.symbol)->value;
 					offset_bytes = word_to_hex(third_byte);
-					reltab.insert(current_section, shtab.find_sh_node(current_section)->size + 1, REL_16, op.symbol);
-					return byte_to_hex(second_byte) + offset_bytes.substr(offset_bytes.size() - 2) + offset_bytes.substr(0, 2);
+					reltab.insert(current_section, sections[current_section].size()/2 - 2, REL_16, op.symbol);
+					sections[current_section] += byte_to_hex(second_byte) + offset_bytes.substr(offset_bytes.size() - 2) + offset_bytes.substr(0, 2);
+					break;
 				case PCREL:
 					second_byte = (second_byte | REGIND_DISP_16_MASK) << 5;
 					second_byte = second_byte | (PC << 1);
@@ -870,38 +872,41 @@ std::string Assembler::one_operand_instruction_handler(bool first_operand,bool f
 						if (offset >= INT8_MIN && offset <= INT8_MAX)
 						{
 							second_byte = (second_byte | REGIND_DISP_8_MASK) << 5;
-							return byte_to_hex(second_byte) + byte_to_hex(third_byte);
+							sections[current_section] += byte_to_hex(second_byte) + byte_to_hex(third_byte);
 						}
 						else
 						{
 							offset_bytes = word_to_hex(third_byte);
-							return byte_to_hex(second_byte) + offset_bytes.substr(offset_bytes.size() - 2) + offset_bytes.substr(0, 2);
+							sections[current_section] += byte_to_hex(second_byte) + offset_bytes.substr(offset_bytes.size() - 2) + offset_bytes.substr(0, 2);
 						}
 					}
 					else
 					{
-						reltab.insert(current_section, shtab.find_sh_node(current_section)->size + 1, REL_PC_16, op.symbol);
-						return byte_to_hex(second_byte) + word_to_hex(0);
+						reltab.insert(current_section, sections[current_section].size()/2 - 2, REL_PC_16, op.symbol);
+						sections[current_section] += byte_to_hex(second_byte) + word_to_hex(0);
 					}
+					break;
 				case ABS:
 					second_byte = (second_byte | MEMDIR_MASK) << 5;
-					reltab.insert(current_section, shtab.find_sh_node(current_section)->size + 1, REL_16, op.symbol);
-					return byte_to_hex(second_byte) + word_to_hex(symtab.find_symbol(op.symbol)->value);
+					reltab.insert(current_section, sections[current_section].size()/2 - 2, REL_16, op.symbol);
+					sections[current_section] += byte_to_hex(second_byte) + word_to_hex(symtab.find_symbol(op.symbol)->value);
+					break;
 				case MEMDIR:
 					second_byte = (second_byte | MEMDIR_MASK) << 5;
 					offset_bytes = word_to_hex(op.literal);
-					return byte_to_hex(second_byte) + offset_bytes.substr(offset_bytes.size() - 2) + offset_bytes.substr(0, 2);
+					sections[current_section] += byte_to_hex(second_byte) + offset_bytes.substr(offset_bytes.size() - 2) + offset_bytes.substr(0, 2);
+					break;
 				}
 			}
 			else
 				Error::operands_error(line_iterator->src_line);
 		}
 }
-std::string Assembler::two_operands_instruction_handler()
+void Assembler::two_operands_instruction_handler()
 {
 	bool is_byte = line_iterator->operands.front().is_byte;
-	return one_operand_instruction_handler(true, false, false, true) +
-		one_operand_instruction_handler(false, is_byte, !is_byte, false);
+	one_operand_instruction_handler(true, false, false, true);
+	one_operand_instruction_handler(false, is_byte, !is_byte, false);
 }
 void Assembler::sp_instruction_handler()
 {
@@ -917,13 +922,14 @@ void Assembler::sp_instruction_handler()
 			}
 
 
-			text_section += byte_to_hex(first_byte);
+			sections[current_section] += byte_to_hex(first_byte);
 
 			switch (line_iterator->operands.size())
 			{
-				case 1:text_section += one_operand_instruction_handler(true,false,false,true); break;
-				case 2:text_section += two_operands_instruction_handler(); break;
+				case 1:one_operand_instruction_handler(true,false,false,true); break;
+				case 2:two_operands_instruction_handler(); break;
 			}
+			sections[current_section] += '\n';
 		}
 		else
 			Error::wrong_operands_numbers(line_iterator->instruction, instructions_op_numbers[line_iterator->instruction], line_iterator->src_line);
@@ -962,14 +968,14 @@ std::string Assembler::assemble_line_list()
 	std::cout << shtab;*/
 
 	second_pass();
-	//std::cout << reltab;
-	std::string ret = text_section + data_section;
-	for (auto& it : custom_sections)
+	std::cout << reltab;
+	std::string ret = "";
+	for (auto& it : sections)
 	{
 		ret += it.second;
 	}
 	//return ret;
-	return text_section;
+	return sections[".text"];
 }
 
 Assembler::Assembler(std::list<Line> line_list)
@@ -977,6 +983,10 @@ Assembler::Assembler(std::list<Line> line_list)
 	LC = 0;
 	current_section = "";
 	this->line_list = line_list;
+	sections[".text"] = "";
+	sections[".data"] = "";
+	sections[".bss"] = "";
+
 	line_iterator = this->line_list.begin();
 	fp_map[".text"] = &Assembler::fp_section_handler;
 	fp_map[".bss"] = &Assembler::fp_section_handler;

@@ -158,9 +158,7 @@ private:
 	std::list<Line> line_list;
 	std::list<Line>::iterator line_iterator;
 
-	std::string text_section;
-	std::string data_section;
-	std::unordered_map<std::string, std::string> custom_sections;
+	std::unordered_map<std::string, std::string> sections;
 
 	void first_pass();
 	void second_pass();
@@ -185,8 +183,8 @@ private:
 	void fp_end_handler();
 	void do_nothing(){}
 	bool check_operands();
-	std::string one_operand_instruction_handler(bool,bool,bool,bool);
-	std::string two_operands_instruction_handler();
+	void one_operand_instruction_handler(bool,bool,bool,bool);
+	void two_operands_instruction_handler();
 	bool pcrel_present();
 	bool immed_sym_present();
 	bool is_jump_instruction();
