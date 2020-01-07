@@ -158,6 +158,8 @@ void Parser::read_operand_list()
                     {
                         operand->reg.low = true;
                     }
+					operand->is_word = false;
+					operand->is_byte = true;
                 }
                 token_iterator++;
                 type = token_iterator->type;
@@ -187,16 +189,9 @@ void Parser::read_operand_list()
                         {
                             operand->type = REGINDDISP_IMMED;
                             operand->literal = read_dec_literal(sign);
-							if (operand->literal < INT8_MAX && operand->literal > INT8_MIN)
-							{
-								operand->is_word = false;
-								operand->is_byte = true;
-							}
-							else
-							{
-								operand->is_word = true;
-								operand->is_byte = false;
-							}
+							operand->is_word = true;
+							operand->is_byte = false;
+							
                             // global_token_ptr = global_token_ptr->next;
                             type = token_iterator->type;
                         }
@@ -207,6 +202,9 @@ void Parser::read_operand_list()
                     {
                         operand->type = REGINDDISP_SYM_VALUE;
                         operand->symbol = token_iterator->token_string;
+
+						operand->is_word = true;
+						operand->is_byte = false;
 
                         token_iterator++;
                         type = token_iterator->type;
@@ -330,7 +328,7 @@ void Parser::read_command()
 				}
 			}
 			else
-				line_pointer->operands_word = true, line_pointer->operands_byte = false;
+				line_pointer->operands_word = false, line_pointer->operands_byte = false;
         token_iterator++;
     }
     else if (token_iterator != token_list.end() && token_iterator->type == "DIRECTIVE")
